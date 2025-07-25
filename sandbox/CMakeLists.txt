@@ -28,7 +28,9 @@ COMMAND
   ${CMAKE_COMMAND} -E echo "************************************************************* "
 
 COMMAND
-    ${PARSER_PROGRAM} "${PRECOMPILE_FILE_PATH}"  "${GENCODE_OUTPUT}"  "${GENCODE_ROOT}" "${sys_include}" "Sandbox" 0
+  ${CMAKE_COMMAND} -E echo ${PARSER_PROGRAM} "--project_file_name" "${PRECOMPILE_FILE_PATH}"  "--output_file_name" "${GENCODE_OUTPUT}"  "--project_root" "${GENCODE_ROOT}" "--template_root" "${GENCODE_TEMPLATE}" "--sys_include" "${sys_include}" "--module_name" "Sandbox" "--show_errors" "false" 
+COMMAND
+    ${PARSER_PROGRAM} "--project_file_name" "${PRECOMPILE_FILE_PATH}"  "--output_file_name" "${GENCODE_OUTPUT}"  "--project_root" "${GENCODE_ROOT}" "--template_root" "${GENCODE_TEMPLATE}" "--sys_include" "${sys_include}" "--module_name" "Sandbox" "--show_errors" "false" 
 ### BUILDING ====================================================================================
 COMMAND
     ${CMAKE_COMMAND} -E echo "+++ Precompile finished +++"

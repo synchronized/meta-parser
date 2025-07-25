@@ -7,6 +7,8 @@ find_package(LLVM REQUIRED)
 
 find_package(mustache REQUIRED)
 
+find_package(argparse REQUIRED)
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${HEADERS} ${SOURCES})
@@ -32,6 +34,7 @@ target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/pa
 
 target_link_libraries(${TARGET_NAME} LLVM::clang)
 target_link_libraries(${TARGET_NAME} mustache::mustache)
+target_link_libraries(${TARGET_NAME} argparse::argparse)
 
 
 get_target_property(LLVM_SHARED_LIBRARY_DIR LLVM::clang IMPORTED_LOCATION)

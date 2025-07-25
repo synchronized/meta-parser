@@ -6,7 +6,10 @@ namespace Generator
     {
     public:
         SerializerGenerator() = delete;
-        SerializerGenerator(std::string source_directory, std::function<std::string(std::string)> get_include_function);
+        SerializerGenerator(
+            std::string source_directory, 
+            std::string template_path,
+            std::function<std::string(std::string)> get_include_function);
 
         virtual int generate(std::string path, SchemaMoudle schema) override;
 

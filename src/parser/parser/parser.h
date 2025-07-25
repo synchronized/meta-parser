@@ -19,7 +19,8 @@ public:
 
     MetaParser(const std::string project_input_file,
                const std::string include_file_path,
-               const std::string include_path,
+               const std::string project_root,
+               const std::string template_root,
                const std::string include_sys,
                const std::string module_name,
                bool              is_show_errors);
