@@ -25,8 +25,8 @@ namespace Generator
     void ReflectionGenerator::prepareStatus(std::string path)
     {
         GeneratorInterface::prepareStatus(path);
-        TemplateManager::getInstance()->loadTemplates(m_root_path, "commonReflectionFile");
-        TemplateManager::getInstance()->loadTemplates(m_root_path, "allReflectionFile");
+        TemplateManager::getInstance()->loadTemplates(m_template_path, "commonReflectionFile");
+        TemplateManager::getInstance()->loadTemplates(m_template_path, "allReflectionFile");
         return;
     }
 
@@ -46,8 +46,9 @@ namespace Generator
         Mustache::data include_headfiles(Mustache::data::type::list);
         Mustache::data class_defines(Mustache::data::type::list);
 
-        include_headfiles.push_back(
-            Mustache::data("headfile_name", Utils::makeRelativePath(m_root_path, path).string()));
+        std::string rela_Path = Utils::makeRelativePath(m_root_path, path).string();
+        Utils::replaceAll(rela_Path, "\\", "/");
+        include_headfiles.push_back(Mustache::data("headfile_name", rela_Path));
 
         std::map<std::string, bool> class_names;
         // class defs

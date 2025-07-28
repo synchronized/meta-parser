@@ -28,9 +28,7 @@ COMMAND
   ${CMAKE_COMMAND} -E echo "************************************************************* "
 
 COMMAND
-  ${CMAKE_COMMAND} -E echo ${PARSER_PROGRAM} "--project_file_name" "${PRECOMPILE_FILE_PATH}"  "--output_file_name" "${GENCODE_OUTPUT}"  "--project_root" "${GENCODE_ROOT}" "--template_root" "${GENCODE_TEMPLATE}" "--sys_include" "${sys_include}" "--module_name" "Sandbox" "--show_errors" "false" 
-COMMAND
-    ${PARSER_PROGRAM} "--project_file_name" "${PRECOMPILE_FILE_PATH}"  "--output_file_name" "${GENCODE_OUTPUT}"  "--project_root" "${GENCODE_ROOT}" "--template_root" "${GENCODE_TEMPLATE}" "--sys_include" "${sys_include}" "--module_name" "Sandbox" "--show_errors" "false" 
+    ${PARSER_PROGRAM} --project_file_name "${PRECOMPILE_FILE_PATH}"  --output_file_name "${GENCODE_OUTPUT}"  --project_root "${GENCODE_ROOT}" --template_root "${GENCODE_TEMPLATE}" --sys_include "${sys_include}" --module_name "Sandbox"
 ### BUILDING ====================================================================================
 COMMAND
     ${CMAKE_COMMAND} -E echo "+++ Precompile finished +++"
@@ -43,6 +41,7 @@ file(GLOB_RECURSE SOURCES "*.cpp")
 # header files are superflous, but some IDEs (Visual Studio) don't include
 # them in the solution explorer without them being added to the list of sources
 add_executable(${SANDBOX_TARGET} ${SOURCES})
+set_target_properties(${SANDBOX_TARGET} PROPERTIES CXX_STANDARD 17)
 target_include_directories(${SANDBOX_TARGET} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 

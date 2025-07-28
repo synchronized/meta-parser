@@ -56,7 +56,6 @@ MetaParser::MetaParser(const std::string project_input_file,
 {
 
     m_work_paths = Utils::split(project_root, ";");
-    std::cerr << "m_work_paths:" << m_work_paths[0] << std::endl;
 
     m_generators.emplace_back(new Generator::SerializerGenerator(
         m_work_paths[0], template_root,
@@ -92,7 +91,6 @@ void MetaParser::finish(void)
 bool MetaParser::parseProject()
 {
     bool result = true;
-    std::cout << "Parsing project file: " << m_project_input_file << std::endl;
 
     std::fstream include_txt_file(m_project_input_file, std::ios::in);
 
@@ -107,8 +105,6 @@ bool MetaParser::parseProject()
 
     std::string context = buffer.str();
     Utils::replaceAll(context, "\n", "");
-
-    std::cout << "context: --[" << context << "]--" << std::endl;
 
     auto         inlcude_files = Utils::split(context, ";");
     std::fstream include_file;

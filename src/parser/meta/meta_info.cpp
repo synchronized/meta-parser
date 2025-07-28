@@ -25,13 +25,16 @@ std::string MetaInfo::getProperty(const std::string& key) const
     return search == m_properties.end() ? "" : search->second;
 }
 
-bool MetaInfo::getFlag(const std::string& key) const { return m_properties.find(key) != m_properties.end(); }
+bool MetaInfo::getFlag(const std::string& key) const { 
+    return m_properties.find(key) != m_properties.end(); 
+}
 
 std::vector<MetaInfo::Property> MetaInfo::extractProperties(const Cursor& cursor) const
 {
     std::vector<Property> ret_list;
 
     auto propertyList = cursor.getDisplayName();
+    std::cout << "propertyList: " << propertyList << std::endl;
 
     auto&& properties = Utils::split(propertyList, ",");
 

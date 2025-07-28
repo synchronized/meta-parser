@@ -72,8 +72,13 @@ int main(int argc, char* argv[])
 int parse(Params& params) {
 
     std::cout << std::endl;
-    std::cout << "Parsing meta data for target \"" << params.module_name << "\"" << std::endl;
-    std::fstream input_file;
+    std::cout << "Parsing project_file_name : \"" << params.project_file_name << "\"" << std::endl;
+    std::cout << "Parsing output_file_name  : \"" << params.output_file_name << "\"" << std::endl;
+    std::cout << "Parsing project_root      : \"" << params.project_root << "\"" << std::endl;
+    std::cout << "Parsing template_root     : \"" << params.template_root << "\"" << std::endl;
+    std::cout << "Parsing sys_include       : \"" << params.sys_include << "\"" << std::endl;
+    std::cout << "Parsing module_name       : \"" << params.module_name << "\"" << std::endl;
+    std::cout << "Parsing show_errors       : \"" << params.show_errors << "\"" << std::endl;
 
     MetaParser parser(
         params.project_file_name, 
@@ -84,7 +89,6 @@ int parse(Params& params) {
         params.module_name, 
         params.show_errors);
 
-    std::cout << "Parsing in " << params.project_root << std::endl;
     int result = parser.parse();
     if (0 != result)
     {

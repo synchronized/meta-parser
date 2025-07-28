@@ -2,8 +2,14 @@
 
 #include <string>
 
-class Person {
+#include "runtime/meta/reflect.hpp"
+
+namespace Sandbox {
+
+CLASS(Person, Fields) {
 public:
     int id;
     std::string name;
 };
+
+}

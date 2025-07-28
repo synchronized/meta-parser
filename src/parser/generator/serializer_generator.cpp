@@ -20,9 +20,9 @@ namespace Generator
     void SerializerGenerator::prepareStatus(std::string path)
     {
         GeneratorInterface::prepareStatus(path);
-        TemplateManager::getInstance()->loadTemplates(m_root_path, "allSerializer.h");
-        TemplateManager::getInstance()->loadTemplates(m_root_path, "allSerializer.ipp");
-        TemplateManager::getInstance()->loadTemplates(m_root_path, "commonSerializerGenFile");
+        TemplateManager::getInstance()->loadTemplates(m_template_path, "allSerializer.h");
+        TemplateManager::getInstance()->loadTemplates(m_template_path, "allSerializer.ipp");
+        TemplateManager::getInstance()->loadTemplates(m_template_path, "commonSerializerGenFile");
         return;
     }
 
