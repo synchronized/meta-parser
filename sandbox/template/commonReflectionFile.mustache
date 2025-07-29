@@ -1,25 +1,21 @@
 #pragma once
-#include "runtime/meta/reflect.hpp"
+#include "runtime/meta/reflection.hpp"
+#include "runtime/meta/reflection_register.h"
 {{#include_headfiles}}
 #include "{{headfile_name}}"
 {{/include_headfiles}}
 
-namespace Piccolo {
-namespace Reflection {
+namespace reflection {
 
 {{#class_defines}}
-class TypeWrapperInterface_{{class_name}} {
+class TypeWrapperInterface_{{class_name_with_namespace}} {
 public:
 
-    static {{class_name}}* constructorWithDefault() {
-        return new {{class_name}};
-    }
-
     static void Regist() {
-        auto& builder = reflect::AddClass<{{class_name}}>("{{class_name}}");
+        auto& builder = reflection::AddClass<{{class_name}}>("{{class_name}}");
 
         //constructor
-        builder.AddConstructorDefault(constructorWithDefault)
+        builder.SetConstructorDefault<{{class_name}}>();
 
         // fields
         {{#class_field_defines}}
@@ -34,5 +30,4 @@ public:
 };
 {{/class_defines}}
 
-}//namespace Reflection
-}//namespace Piccolo
+}//namespace reflection

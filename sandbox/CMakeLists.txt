@@ -43,6 +43,7 @@ file(GLOB_RECURSE SOURCES "*.cpp")
 add_executable(${SANDBOX_TARGET} ${SOURCES})
 set_target_properties(${SANDBOX_TARGET} PROPERTIES CXX_STANDARD 17)
 target_include_directories(${SANDBOX_TARGET} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(${SANDBOX_TARGET} PUBLIC json11)
 
 
 add_dependencies(sandbox "${CODEGEN_TARGET}")

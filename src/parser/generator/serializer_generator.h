@@ -25,5 +25,6 @@ namespace Generator
     private:
         Mustache::data m_class_defines {Mustache::data::type::list};
         Mustache::data m_include_headfiles {Mustache::data::type::list};
+        std::vector<std::string> m_sourcefile_list;
     };
 } // namespace Generator

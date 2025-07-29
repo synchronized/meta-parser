@@ -1,6 +1,5 @@
 {
   "dependencies": [
-    "argparse",
-    "json11"
+    "argparse"
   ]
 }

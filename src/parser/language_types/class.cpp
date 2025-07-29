@@ -10,7 +10,6 @@ Class::Class(const Cursor& cursor, const Namespace& current_namespace) :
     m_display_name(Utils::getNameWithoutFirstM(m_qualified_name))
 {
     Utils::replaceAll(m_name, " ", "");
-    Utils::replaceAll(m_name, "Piccolo::", "");
 
     for (auto& child : cursor.getChildren())
     {
@@ -50,5 +49,11 @@ bool Class::shouldCompileMethods(void) const{
 }
 
 std::string Class::getClassName(void) { return m_name; }
+
+std::string Class::GetClassFullName() {
+    std::string class_name_with_namespace = this->m_qualified_name;
+    Utils::replaceAll(class_name_with_namespace, "::", "_");
+    return class_name_with_namespace;
+}
 
 bool Class::isAccessible(void) const { return m_enabled; }

@@ -46,9 +46,9 @@ namespace Generator
         Mustache::data include_headfiles(Mustache::data::type::list);
         Mustache::data class_defines(Mustache::data::type::list);
 
-        std::string rela_Path = Utils::makeRelativePath(m_root_path, path).string();
-        Utils::replaceAll(rela_Path, "\\", "/");
-        include_headfiles.push_back(Mustache::data("headfile_name", rela_Path));
+        std::string rela_path = Utils::makeRelativePath(m_root_path, path).string();
+        Utils::replaceAll(rela_path, "\\", "/");
+        include_headfiles.push_back(Mustache::data("headfile_name", rela_path));
 
         std::map<std::string, bool> class_names;
         // class defs
@@ -106,6 +106,8 @@ namespace Generator
             }
             class_def.set("vector_defines", vector_defines);
             class_defines.push_back(class_def);
+
+            m_sourcefile_list.emplace_back(class_temp->GetClassFullName());
         }
 
         mustache_data.set("class_defines", class_defines);
@@ -118,9 +120,10 @@ namespace Generator
             TemplateManager::getInstance()->renderByTemplate("commonReflectionFile", mustache_data);
         Utils::saveFile(render_string, file_path);
 
-        m_sourcefile_list.emplace_back(tmp);
 
-        m_head_file_list.emplace_back(Utils::makeRelativePath(m_root_path, file_path).string());
+        std::string rela_file = Utils::makeRelativePath(m_root_path, file_path).string();
+        Utils::replaceAll(rela_file, "\\", "/");
+        m_head_file_list.emplace_back(rela_file);
         return 0;
     }
     void ReflectionGenerator::finish()

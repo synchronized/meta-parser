@@ -31,6 +31,29 @@ namespace details {
 
 using ArgWrap = td::impl::ArgWrap;
 
+class ConstructorDefault{
+ public:
+  ConstructorDefault() = default;
+
+  template <typename C>
+  static ConstructorDefault MakeConstructorDefault() {
+    ConstructorDefault ctor;
+    ctor.fn_ = []() -> std::any {
+      return new C;
+    };
+    return ctor;
+  }
+
+  std::any Invoke() {
+    return fn_();
+  }
+
+ private:
+  friend class RawTypeDescriptorBuilder;
+
+  std::function<std::any()> fn_{nullptr};
+};
+
 class MemberVariable {
  public:
   MemberVariable() = default;
@@ -151,6 +174,10 @@ class TypeDescriptor {
     return name_;
   }
 
+  const ConstructorDefault& GetConstructorDefault() const {
+    return constructor_default_;
+  }
+
   const std::vector<MemberVariable> &GetMemberVars() const {
     return member_vars_;
   }
@@ -181,6 +208,7 @@ class TypeDescriptor {
   friend class RawTypeDescriptorBuilder;
 
   std::string name_;
+  ConstructorDefault constructor_default_;
   std::vector<MemberVariable> member_vars_;
   std::vector<MemberFunction> member_funcs_;
 };
@@ -195,6 +223,13 @@ class RawTypeDescriptorBuilder {
       delete;
   RawTypeDescriptorBuilder(RawTypeDescriptorBuilder &&) = default;
   RawTypeDescriptorBuilder &operator=(RawTypeDescriptorBuilder &&) = default;
+
+  template <typename C>
+  void SetConstructorDefault() {
+    ConstructorDefault ctor;
+    ctor = ConstructorDefault::MakeConstructorDefault<C>();
+    desc_->constructor_default_ = ctor;
+  }
 
   template <typename C, typename T>
   void AddMemberVar(const std::string &name, T C::*var) {
@@ -218,6 +253,12 @@ template <typename T>
 class TypeDescriptorBuilder {
  public:
   explicit TypeDescriptorBuilder(const std::string &name) : raw_builder_(name) {
+  }
+
+  template <typename C>
+  TypeDescriptorBuilder &SetConstructorDefault() {
+    raw_builder_.SetConstructorDefault<C>();
+    return *this;
   }
 
   template <typename V>

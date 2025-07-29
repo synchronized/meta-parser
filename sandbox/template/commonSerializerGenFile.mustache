@@ -1,12 +1,38 @@
 #pragma once
+#include "runtime/meta/serializer.hpp"
 {{#include_headfiles}}
 #include "{{headfile_name}}"
 {{/include_headfiles}}
 
-namespace Piccolo{
-    {{#class_defines}}template<>
-    Json Serializer::write(const {{class_name}}& instance);
-    template<>
-    {{class_name}}& Serializer::read(const Json& json_context, {{class_name}}& instance);
-    {{/class_defines}}
+namespace serializer{
+
+{{#class_defines}}
+
+class SearializerWrapperInterface_{{class_name_with_namespace}} {
+public:
+
+    static void* constructorWithJson(const Json& json_context){
+        {{class_name}}* ret_instance= new {{class_name}};
+        Serializer::read(json_context, *ret_instance);
+        return ret_instance;
+    }
+    static Json writeToJson(void* instance){
+        return Serializer::write(*({{class_name}}*)instance);
+    }
+
+    static void Regist() {
+        auto& builder = serializer::AddClass<{{class_name}}>("{{class_name}}");
+
+        //constructor
+        builder.SetConstructorWithJson(constructorWithJson);
+        builder.SetWriteToJson(writeToJson);
+    }
+};
+
+template<>
+Json Serializer::write(const {{class_name}}& instance);
+template<>
+{{class_name}}& Serializer::read(const Json& json_context, {{class_name}}& instance);
+{{/class_defines}}
+
 }//namespace

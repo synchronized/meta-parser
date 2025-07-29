@@ -1,5 +1,16 @@
 #pragma once
-#include "runtime/core/meta/serializer/serializer.h"
+#include "runtime/meta/serializer.hpp"
+#include "runtime/meta/serializer_register.h"
 {{#include_headfiles}}
 #include "{{headfile_name}}"
 {{/include_headfiles}}
+
+namespace serializer{
+
+void TypeMetaRegister::metaRegister(){
+    {{#sourefile_names}}
+    SearializerWrapperInterface_{{sourefile_name_upper_camel_case}}::Regist();
+    {{/sourefile_names}}
+}
+
+}//namespace serializer

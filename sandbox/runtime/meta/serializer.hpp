@@ -1,10 +1,10 @@
 #pragma once
 #include "runtime/meta/json.h"
-#include "runtime/meta/reflection.h"
+#include "runtime/meta/reflection.hpp"
 
 #include <cassert>
 
-namespace Piccolo
+namespace serializer
 {
     template<typename...>
     inline constexpr bool always_false = false;
@@ -31,23 +31,27 @@ namespace Piccolo
             }
             else
             {
-                instance = static_cast<T*>(
-                    Reflection::TypeMeta::newFromNameAndJson(type_name, json_context["$context"]).m_instance);
+                auto& classDesc = reflection::GetByName(type_name);
+                auto instanceAny = classDesc.GetConstructorDefault().Invoke();
+                instance = std::any_cast<C *>(instanceAny);
+                read(json_context["$context"], *instance);
             }
             return instance;
         }
 
         template<typename T>
-        static Json write(const Reflection::ReflectionPtr<T>& instance)
+        static Json write(const reflection::ReflectionPtr<T>& instance)
         {
             T*          instance_ptr = static_cast<T*>(instance.operator->());
             std::string type_name    = instance.getTypeName();
-            return Json::object {{"$typeName", Json(type_name)},
-                                  {"$context", Reflection::TypeMeta::writeByName(type_name, instance_ptr)}};
+            return Json::object {
+                {"$typeName", Json(type_name)},
+                {"$context", write(instance_ptr)},
+            };
         }
 
         template<typename T>
-        static T*& read(const Json& json_context, Reflection::ReflectionPtr<T>& instance)
+        static T*& read(const Json& json_context, reflection::ReflectionPtr<T>& instance)
         {
             std::string type_name = json_context["$typeName"].string_value();
             instance.setTypeName(type_name);
@@ -166,4 +170,103 @@ namespace Piccolo
 
     //
     ////////////////////////////////////
-} // namespace Piccolo
+
+
+namespace details {
+
+class TypeDescriptor {
+ public:
+  const std::string &name() const {
+    return name_;
+  }
+
+  const std::function<void*(const Json&)> &GetConstructorWithJson() const {
+    return constructorWithJson_;
+  }
+
+  const std::function<Json(void*)> &GetWriteToJson() const {
+    return writeToJson_;
+  }
+
+ private:
+  friend class RawTypeDescriptorBuilder;
+
+  std::string name_;
+  std::function<void*(const Json&)> constructorWithJson_;
+  std::function<Json(void*)> writeToJson_;
+};
+
+class RawTypeDescriptorBuilder {
+ public:
+  explicit RawTypeDescriptorBuilder(const std::string &name);
+
+  ~RawTypeDescriptorBuilder();
+  RawTypeDescriptorBuilder(const RawTypeDescriptorBuilder &) = delete;
+  RawTypeDescriptorBuilder &operator=(const RawTypeDescriptorBuilder &) =
+      delete;
+  RawTypeDescriptorBuilder(RawTypeDescriptorBuilder &&) = default;
+  RawTypeDescriptorBuilder &operator=(RawTypeDescriptorBuilder &&) = default;
+
+  void SetConstructorWithJson(std::function<void*(const Json&)> func) {
+    desc_->constructorWithJson_ = func;
+  }
+
+  void SetWriteToJson(const std::function<Json(void*)> func) {
+    desc_->writeToJson_ = func;
+  }
+
+
+ private:
+  std::unique_ptr<TypeDescriptor> desc_{nullptr};
+};
+
+template <typename T>
+class TypeDescriptorBuilder {
+ public:
+  explicit TypeDescriptorBuilder(const std::string &name) : raw_builder_(name) {
+  }
+
+  TypeDescriptorBuilder &SetConstructorWithJson(std::function<void*(const Json&)> func) {
+    raw_builder_.SetConstructorWithJson(func);
+    return *this;
+  }
+
+  TypeDescriptorBuilder &SetWriteToJson(const std::function<Json(void*)> func) {
+    raw_builder_.SetWriteToJson(func);
+    return *this;
+  }
+
+ private:
+  RawTypeDescriptorBuilder raw_builder_;
+};
+
+class Registry {
+ public:
+  static Registry &instance() {
+    static Registry inst;
+    return inst;
+  }
+
+  TypeDescriptor *Find(const std::string &name);
+
+  void Register(std::unique_ptr<TypeDescriptor> desc);
+
+  void Clear();
+
+ private:
+  std::unordered_map<std::string, std::unique_ptr<TypeDescriptor>> type_descs_;
+};
+
+}  // namespace details
+
+template <typename T>
+details::TypeDescriptorBuilder<T> AddClass(const std::string &name) {
+  details::TypeDescriptorBuilder<T> b{name};
+  return b;
+}
+
+details::TypeDescriptor &GetByName(const std::string &name);
+
+void ClearRegistry();
+
+} // namespace serializer
