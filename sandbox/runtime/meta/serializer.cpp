@@ -5,36 +5,36 @@ namespace serializer {
 namespace details {
 
 RawTypeDescriptorBuilder::RawTypeDescriptorBuilder(const std::string &name)
-    : desc_(std::make_unique<TypeDescriptor>()) {
-  desc_->name_ = name;
+        : desc_(std::make_unique<TypeDescriptor>()) {
+    desc_->name_ = name;
 }
 
 RawTypeDescriptorBuilder::~RawTypeDescriptorBuilder() {
-  Registry::instance().Register(std::move(desc_));
+    Registry::instance().Register(std::move(desc_));
 }
 
 TypeDescriptor *Registry::Find(const std::string &name) {
-  return type_descs_.find(name)->second.get();
+    return type_descs_.find(name)->second.get();
 }
 
 void Registry::Register(std::unique_ptr<TypeDescriptor> desc) {
-  auto name = desc->name();
-  type_descs_[name] = std::move(desc);
+    auto name = desc->name();
+    type_descs_[name] = std::move(desc);
 }
 
 void Registry::Clear() {
-  decltype(type_descs_) tmp;
-  tmp.swap(type_descs_);
+    decltype(type_descs_) tmp;
+    tmp.swap(type_descs_);
 }
 
 }  // namespace details
 
 details::TypeDescriptor &GetByName(const std::string &name) {
-  return *details::Registry::instance().Find(name);
+    return *details::Registry::instance().Find(name);
 }
 
 void ClearRegistry() {
-  details::Registry::instance().Clear();
+    details::Registry::instance().Clear();
 }
 
 ////////////////////////////////////

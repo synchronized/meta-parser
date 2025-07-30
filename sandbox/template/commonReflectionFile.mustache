@@ -13,20 +13,18 @@ class TypeWrapperInterface_{{class_name_with_namespace}} {
 public:
 
     static void Regist() {
-        auto& builder = AddClass<{{class_name}}>("{{class_name}}");
-
-        //constructor
-        builder.SetConstructorDefault<{{class_name}}>();
-
-        // fields
-        {{#class_field_defines}}
-        builder.AddMemberVar("{{class_field_name}}", &{{class_name}}::{{class_field_name}});
-        {{/class_field_defines}}
-
-        // methods
-        {{#class_method_defines}}
-        builder.AddMemberFunc("{{class_method_name}}", &{{class_name}}::{{class_method_name}});
-        {{/class_method_defines}}
+        AddClass<{{class_name}}>("{{class_name}}")
+            //constructor
+            .SetConstructorDefault<{{class_name}}>()
+            // fields
+            {{#class_field_defines}}
+            .AddMemberVar("{{class_field_name}}", &{{class_name}}::{{class_field_name}})
+            {{/class_field_defines}}
+            // methods
+            {{#class_method_defines}}
+            .AddMemberFunc("{{class_method_name}}", &{{class_name}}::{{class_method_name}})
+            {{/class_method_defines}}
+            ;
     }
 };
 

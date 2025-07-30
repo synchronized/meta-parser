@@ -9,94 +9,94 @@ namespace serializer {
 namespace details {
 
 class TypeDescriptor {
- public:
-  const std::string &name() const {
-    return name_;
-  }
+public:
+    const std::string &name() const {
+        return name_;
+    }
 
-  const std::function<void*(const Json&)> &GetConstructorWithJson() const {
-    return constructorWithJson_;
-  }
+    const std::function<void*(const Json&)> &GetConstructorWithJson() const {
+        return constructorWithJson_;
+    }
 
-  const std::function<Json(void*)> &GetWriteToJson() const {
-    return writeToJson_;
-  }
+    const std::function<Json(void*)> &GetWriteToJson() const {
+        return writeToJson_;
+    }
 
- private:
-  friend class RawTypeDescriptorBuilder;
+private:
+    friend class RawTypeDescriptorBuilder;
 
-  std::string name_;
-  std::function<void*(const Json&)> constructorWithJson_;
-  std::function<Json(void*)> writeToJson_;
+    std::string name_;
+    std::function<void*(const Json&)> constructorWithJson_;
+    std::function<Json(void*)> writeToJson_;
 };
 
 class RawTypeDescriptorBuilder {
- public:
-  explicit RawTypeDescriptorBuilder(const std::string &name);
+public:
+    explicit RawTypeDescriptorBuilder(const std::string &name);
 
-  ~RawTypeDescriptorBuilder();
-  RawTypeDescriptorBuilder(const RawTypeDescriptorBuilder &) = delete;
-  RawTypeDescriptorBuilder &operator=(const RawTypeDescriptorBuilder &) =
-      delete;
-  RawTypeDescriptorBuilder(RawTypeDescriptorBuilder &&) = default;
-  RawTypeDescriptorBuilder &operator=(RawTypeDescriptorBuilder &&) = default;
+    ~RawTypeDescriptorBuilder();
+    RawTypeDescriptorBuilder(const RawTypeDescriptorBuilder &) = delete;
+    RawTypeDescriptorBuilder &operator=(const RawTypeDescriptorBuilder &) =
+        delete;
+    RawTypeDescriptorBuilder(RawTypeDescriptorBuilder &&) = default;
+    RawTypeDescriptorBuilder &operator=(RawTypeDescriptorBuilder &&) = default;
 
-  void SetConstructorWithJson(std::function<void*(const Json&)> func) {
-    desc_->constructorWithJson_ = func;
-  }
+    void SetConstructorWithJson(std::function<void*(const Json&)> func) {
+        desc_->constructorWithJson_ = func;
+    }
 
-  void SetWriteToJson(const std::function<Json(void*)> func) {
-    desc_->writeToJson_ = func;
-  }
+    void SetWriteToJson(const std::function<Json(void*)> func) {
+        desc_->writeToJson_ = func;
+    }
 
 
- private:
-  std::unique_ptr<TypeDescriptor> desc_{nullptr};
+private:
+    std::unique_ptr<TypeDescriptor> desc_{nullptr};
 };
 
 template <typename T>
 class TypeDescriptorBuilder {
- public:
-  explicit TypeDescriptorBuilder(const std::string &name) : raw_builder_(name) {
-  }
+public:
+    explicit TypeDescriptorBuilder(const std::string &name) : raw_builder_(name) {
+    }
 
-  TypeDescriptorBuilder &SetConstructorWithJson(std::function<void*(const Json&)> func) {
-    raw_builder_.SetConstructorWithJson(func);
-    return *this;
-  }
+    TypeDescriptorBuilder &SetConstructorWithJson(std::function<void*(const Json&)> func) {
+        raw_builder_.SetConstructorWithJson(func);
+        return *this;
+    }
 
-  TypeDescriptorBuilder &SetWriteToJson(const std::function<Json(void*)> func) {
-    raw_builder_.SetWriteToJson(func);
-    return *this;
-  }
+    TypeDescriptorBuilder &SetWriteToJson(const std::function<Json(void*)> func) {
+        raw_builder_.SetWriteToJson(func);
+        return *this;
+    }
 
- private:
-  RawTypeDescriptorBuilder raw_builder_;
+private:
+    RawTypeDescriptorBuilder raw_builder_;
 };
 
 class Registry {
- public:
-  static Registry &instance() {
-    static Registry inst;
-    return inst;
-  }
+public:
+    static Registry &instance() {
+        static Registry inst;
+        return inst;
+    }
 
-  TypeDescriptor *Find(const std::string &name);
+    TypeDescriptor *Find(const std::string &name);
 
-  void Register(std::unique_ptr<TypeDescriptor> desc);
+    void Register(std::unique_ptr<TypeDescriptor> desc);
 
-  void Clear();
+    void Clear();
 
- private:
-  std::unordered_map<std::string, std::unique_ptr<TypeDescriptor>> type_descs_;
+private:
+    std::unordered_map<std::string, std::unique_ptr<TypeDescriptor>> type_descs_;
 };
 
 }  // namespace details
 
 template <typename T>
 details::TypeDescriptorBuilder<T> AddClass(const std::string &name) {
-  details::TypeDescriptorBuilder<T> b{name};
-  return b;
+    details::TypeDescriptorBuilder<T> b{name};
+    return b;
 }
 
 details::TypeDescriptor &GetByName(const std::string &name);

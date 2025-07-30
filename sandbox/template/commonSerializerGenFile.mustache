@@ -27,11 +27,10 @@ public:
     }
 
     static void Regist() {
-        auto& builder = AddClass<{{class_name}}>("{{class_name}}");
-
-        //constructor
-        builder.SetConstructorWithJson(constructorWithJson);
-        builder.SetWriteToJson(writeToJson);
+        AddClass<{{class_name}}>("{{class_name}}")
+            //constructor
+            .SetConstructorWithJson(constructorWithJson)
+            .SetWriteToJson(writeToJson);
     }
 };
 
