@@ -5,9 +5,11 @@
 {{/include_headfiles}}
 
 namespace reflection{
-    void TypeMetaRegister::metaRegister(){
-        {{#sourefile_names}}
-        TypeWrapperInterface_{{sourefile_name_upper_camel_case}}::Regist();
-        {{/sourefile_names}}
-    }
+
+void TypeMetaRegister::metaRegister(){
+    {{#sourefile_names}}
+    generate::TypeWrapperInterface_{{sourefile_name_upper_camel_case}}::Regist();
+    {{/sourefile_names}}
+}
+
 }//namespace reflection

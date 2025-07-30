@@ -4,9 +4,15 @@
 #include "{{headfile_name}}"
 {{/include_headfiles}}
 
+{{#class_defines}}
 namespace serializer{
 
-{{#class_defines}}
+template<>
+Json Serializer::write(const {{class_name}}& instance);
+template<>
+{{class_name}}& Serializer::read(const Json& json_context, {{class_name}}& instance);
+
+namespace generate {
 
 class SearializerWrapperInterface_{{class_name_with_namespace}} {
 public:
@@ -21,7 +27,7 @@ public:
     }
 
     static void Regist() {
-        auto& builder = serializer::AddClass<{{class_name}}>("{{class_name}}");
+        auto& builder = AddClass<{{class_name}}>("{{class_name}}");
 
         //constructor
         builder.SetConstructorWithJson(constructorWithJson);
@@ -29,10 +35,7 @@ public:
     }
 };
 
-template<>
-Json Serializer::write(const {{class_name}}& instance);
-template<>
-{{class_name}}& Serializer::read(const Json& json_context, {{class_name}}& instance);
-{{/class_defines}}
+}//namespace generate
 
 }//namespace
+{{/class_defines}}

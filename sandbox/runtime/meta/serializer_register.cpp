@@ -5,7 +5,7 @@
 #include "runtime/meta/serializer_register.h"
 
 #include "_generated/serializer/all_serializer.h"
-//#include "_generated/serializer/all_serializer.ipp"
+#include "_generated/serializer/all_serializer.ipp"
 
 namespace serializer
 {

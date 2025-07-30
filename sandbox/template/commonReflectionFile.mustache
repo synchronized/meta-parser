@@ -5,14 +5,15 @@
 #include "{{headfile_name}}"
 {{/include_headfiles}}
 
-namespace reflection {
-
 {{#class_defines}}
+namespace reflection {
+namespace generate {
+
 class TypeWrapperInterface_{{class_name_with_namespace}} {
 public:
 
     static void Regist() {
-        auto& builder = reflection::AddClass<{{class_name}}>("{{class_name}}");
+        auto& builder = AddClass<{{class_name}}>("{{class_name}}");
 
         //constructor
         builder.SetConstructorDefault<{{class_name}}>();
@@ -28,6 +29,7 @@ public:
         {{/class_method_defines}}
     }
 };
-{{/class_defines}}
 
+}//namespace generate
 }//namespace reflection
+{{/class_defines}}

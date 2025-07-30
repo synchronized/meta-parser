@@ -1,8 +1,43 @@
 #include "serializer.hpp"
 #include <assert.h>
 
-namespace serializer
-{
+namespace serializer {
+namespace details {
+
+RawTypeDescriptorBuilder::RawTypeDescriptorBuilder(const std::string &name)
+    : desc_(std::make_unique<TypeDescriptor>()) {
+  desc_->name_ = name;
+}
+
+RawTypeDescriptorBuilder::~RawTypeDescriptorBuilder() {
+  Registry::instance().Register(std::move(desc_));
+}
+
+TypeDescriptor *Registry::Find(const std::string &name) {
+  return type_descs_.find(name)->second.get();
+}
+
+void Registry::Register(std::unique_ptr<TypeDescriptor> desc) {
+  auto name = desc->name();
+  type_descs_[name] = std::move(desc);
+}
+
+void Registry::Clear() {
+  decltype(type_descs_) tmp;
+  tmp.swap(type_descs_);
+}
+
+}  // namespace details
+
+details::TypeDescriptor &GetByName(const std::string &name) {
+  return *details::Registry::instance().Find(name);
+}
+
+void ClearRegistry() {
+  details::Registry::instance().Clear();
+}
+
+////////////////////////////////////
 
 template<>
 Json Serializer::write(const char& instance)
@@ -88,103 +123,66 @@ std::string& Serializer::read(const Json& json_context, std::string& instance)
     return instance = json_context.string_value();
 }
 
-    // template<>
-    // Json Serializer::write(const Reflection::object& instance)
-    //{
-    // return Json::object();
-    //}
-    // template<>
-    // Reflection::object& Serializer::read(const Json& json_context, Reflection::object& instance)
-    //{
-    //	return instance;
-    //}
+// template<>
+// Json Serializer::write(const Reflection::object& instance)
+//{
+// return Json::object();
+//}
+// template<>
+// Reflection::object& Serializer::read(const Json& json_context, Reflection::object& instance)
+//{
+//	return instance;
+//}
 
-    //////////////////////////////////
-    // template of generation coder
-    //////////////////////////////////
+//////////////////////////////////
+// template of generation coder
+//////////////////////////////////
 
-    /*template<>
-    Json Serializer::write(const ss& instance)
+/*template<>
+Json Serializer::write(const ss& instance)
+{
+    return Json();
+}
+template<>
+Json Serializer::write(const jkj& instance)
+{
+    return Json();
+}
+
+template<>
+Json Serializer::write(const test_class& instance)
+{
+    Json::array aa;
+    for(auto& item: instance.c)
     {
-        return Json();
+        aa.emplace_back(Serializer::write(item));
     }
-    template<>
-    Json Serializer::write(const jkj& instance)
+    ss jj;
+    reflection::object* jjj1 = &jj;
+    auto kkk = Serializer::write(jjj1);
+    auto jjj = kkk.dump();
+    return Json::object{
+        {"a",Serializer::write(instance.a)},
+        {"b",Serializer::write(instance.b)},
+        {"c",aa}
+    };
+}
+template<>
+test_class& Serializer::read(const Json& json_context, test_class& instance)
+{
+    assert(json_context.is_object());
+    Serializer::read(json_context["a"], instance.a);
+    Serializer::read(json_context["b"], instance.b);
+
+    assert(json_context["c"].is_array());
+    Json::array cc = json_context["c"].array_items();
+    instance.c.resize(cc.size());
+    for (size_t index=0; index < cc.size();++index)
     {
-        return Json();
+        Serializer::read(cc[index], instance.c[index]);
     }
-
-    template<>
-    Json Serializer::write(const test_class& instance)
-    {
-        Json::array aa;
-        for(auto& item: instance.c)
-        {
-            aa.emplace_back(Serializer::write(item));
-        }
-        ss jj;
-        reflection::object* jjj1 = &jj;
-        auto kkk = Serializer::write(jjj1);
-        auto jjj = kkk.dump();
-        return Json::object{
-            {"a",Serializer::write(instance.a)},
-            {"b",Serializer::write(instance.b)},
-            {"c",aa}
-        };
-    }
-    template<>
-    test_class& Serializer::read(const Json& json_context, test_class& instance)
-    {
-        assert(json_context.is_object());
-        Serializer::read(json_context["a"], instance.a);
-        Serializer::read(json_context["b"], instance.b);
-
-        assert(json_context["c"].is_array());
-        Json::array cc = json_context["c"].array_items();
-        instance.c.resize(cc.size());
-        for (size_t index=0; index < cc.size();++index)
-        {
-            Serializer::read(cc[index], instance.c[index]);
-        }
-        return instance;
-    }*/
-
-
-    ////////////////////////////////////
-
-namespace details {
-
-RawTypeDescriptorBuilder::RawTypeDescriptorBuilder(const std::string &name)
-    : desc_(std::make_unique<TypeDescriptor>()) {
-  desc_->name_ = name;
-}
-
-RawTypeDescriptorBuilder::~RawTypeDescriptorBuilder() {
-  Registry::instance().Register(std::move(desc_));
-}
-
-TypeDescriptor *Registry::Find(const std::string &name) {
-  return type_descs_.find(name)->second.get();
-}
-
-void Registry::Register(std::unique_ptr<TypeDescriptor> desc) {
-  auto name = desc->name();
-  type_descs_[name] = std::move(desc);
-}
-
-void Registry::Clear() {
-  decltype(type_descs_) tmp;
-  tmp.swap(type_descs_);
-}
-
-}  // namespace details
-
-details::TypeDescriptor &GetByName(const std::string &name) {
-  return *details::Registry::instance().Find(name);
-}
-
-void ClearRegistry() {
-  details::Registry::instance().Clear();
-}
+    return instance;
+}*/
+////////////////////////////////////
 
 } // namespace serializer
