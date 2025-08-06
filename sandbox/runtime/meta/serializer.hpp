@@ -1,8 +1,9 @@
 #pragma once
-#include "runtime/meta/json.h"
-#include "runtime/meta/reflection.hpp"
 
 #include <cassert>
+
+#include "runtime/meta/json.h"
+#include "runtime/meta/reflection.hpp"
 
 namespace serializer {
 
@@ -32,12 +33,13 @@ private:
 
 class RawTypeDescriptorBuilder {
 public:
+    RawTypeDescriptorBuilder() {}
     explicit RawTypeDescriptorBuilder(const std::string &name);
 
     ~RawTypeDescriptorBuilder();
     RawTypeDescriptorBuilder(const RawTypeDescriptorBuilder &) = delete;
-    RawTypeDescriptorBuilder &operator=(const RawTypeDescriptorBuilder &) =
-        delete;
+    RawTypeDescriptorBuilder &operator=(const RawTypeDescriptorBuilder &) = delete;
+
     RawTypeDescriptorBuilder(RawTypeDescriptorBuilder &&) = default;
     RawTypeDescriptorBuilder &operator=(RawTypeDescriptorBuilder &&) = default;
 
@@ -59,6 +61,12 @@ class TypeDescriptorBuilder {
 public:
     explicit TypeDescriptorBuilder(const std::string &name) : raw_builder_(name) {
     }
+
+    TypeDescriptorBuilder(const TypeDescriptorBuilder &) = delete;
+    TypeDescriptorBuilder &operator=(const TypeDescriptorBuilder &) = delete;
+
+    TypeDescriptorBuilder(TypeDescriptorBuilder &&) = default;
+    TypeDescriptorBuilder &operator=(TypeDescriptorBuilder &&) = default;
 
     TypeDescriptorBuilder &SetConstructorWithJson(std::function<void*(const Json&)> func) {
         raw_builder_.SetConstructorWithJson(func);
@@ -112,9 +120,12 @@ class Serializer
 {
 public:
     template<typename T>
-    static Json writePointer(T* instance)
+    static Json writePointer(const T* instance)
     {
-        return Json::object {{"$typeName", Json {"*"}}, {"$context", Serializer::write(*instance)}};
+        return Json::object {
+            {"$typeName", Json {"*"}}, 
+            {"$context", Serializer::write(*instance)}
+        };
     }
 
     template<typename T>
@@ -132,7 +143,7 @@ public:
         {
             auto& classDesc = GetByName(type_name);
             auto& ctorWithJson = classDesc.GetConstructorWithJson();
-            instance = static_cast<C*>(ctorWithJson(json_context["$context"]));
+            instance = static_cast<T*>(ctorWithJson(json_context["$context"]));
         }
         return instance;
     }
@@ -164,7 +175,7 @@ public:
 
         if constexpr (std::is_pointer<T>::value)
         {
-            return writePointer((T)instance);
+            return writePointer(instance);
         }
         else
         {
@@ -272,3 +283,5 @@ CLASS(ss:public jkj,WhiteListFields)
 ////////////////////////////////////
 
 } // namespace serializer
+
+#include "_generated/serializer/all_serializer.h"

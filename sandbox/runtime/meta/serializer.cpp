@@ -10,7 +10,9 @@ RawTypeDescriptorBuilder::RawTypeDescriptorBuilder(const std::string &name)
 }
 
 RawTypeDescriptorBuilder::~RawTypeDescriptorBuilder() {
-    Registry::instance().Register(std::move(desc_));
+    if (desc_) {
+        Registry::instance().Register(std::move(desc_));
+    }
 }
 
 TypeDescriptor *Registry::Find(const std::string &name) {

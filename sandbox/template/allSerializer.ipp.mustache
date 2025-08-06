@@ -5,6 +5,12 @@
 
 namespace serializer{
 
+void TypeMetaRegister::metaRegister(){
+    {{#sourefile_names}}
+    generate::SearializerWrapperInterface_{{sourefile_name_upper_camel_case}}::Regist();
+    {{/sourefile_names}}
+}
+
 {{#class_defines}}
 template<>
 Json Serializer::write(const {{class_name}}& instance){

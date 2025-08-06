@@ -41,7 +41,7 @@ file(GLOB_RECURSE SOURCES "*.cpp")
 # header files are superflous, but some IDEs (Visual Studio) don't include
 # them in the solution explorer without them being added to the list of sources
 add_executable(${SANDBOX_TARGET} ${SOURCES})
-set_target_properties(${SANDBOX_TARGET} PROPERTIES CXX_STANDARD 17)
+set_target_properties(${SANDBOX_TARGET} PROPERTIES CXX_STANDARD 20)
 target_include_directories(${SANDBOX_TARGET} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${SANDBOX_TARGET} PUBLIC json11)
 

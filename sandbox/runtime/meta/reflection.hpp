@@ -29,6 +29,7 @@
 namespace reflection {
 namespace details {
 
+using namespace td::impl;
 using ArgWrap = td::impl::ArgWrap;
 
 class ConstructorDefault{
@@ -99,20 +100,22 @@ public:
 
     template <typename C, typename R, typename... Args>
     explicit MemberFunction(R (C::*func)(Args...)) {
+        n_args_ = sizeof...(Args);
         fn_ = [func](void *args_ptr) -> std::any {
-            using array_t = std::array<impl::ArgWrap, sizeof...(Args)+1>;
+            using array_t = std::array<ArgWrap, sizeof...(Args)+1>;
             auto &args_arr = *static_cast<array_t *>(args_ptr);
-            auto args_tuple = impl::AsTuple<C, Args...>(args_arr);
+            auto args_tuple = AsTuple<C, Args...>(args_arr);
             return std::apply(func, args_tuple);
         };
     }
 
     template <typename C, typename... Args>
     explicit MemberFunction(void (C::*func)(Args...)) {
+        n_args_ = sizeof...(Args);
         fn_ = [func](void *args_ptr) -> std::any {
-            using array_t = std::array<impl::ArgWrap, sizeof...(Args)+1>;
+            using array_t = std::array<ArgWrap, sizeof...(Args)+1>;
             auto &args_arr = *static_cast<array_t *>(args_ptr);
-            auto args_tuple = impl::AsTuple<C, Args...>(args_arr);
+            auto args_tuple = AsTuple<C, Args...>(args_arr);
             std::apply(func, args_tuple);
             return std::any{};
         };
@@ -120,10 +123,11 @@ public:
 
     template <typename C, typename R, typename... Args>
     explicit MemberFunction(R (C::*func)(Args...) const) {
+        n_args_ = sizeof...(Args);
         fn_ = [func](void *args_ptr) -> std::any {
-            using array_t = std::array<impl::ArgWrap, sizeof...(Args)+1>;
+            using array_t = std::array<ArgWrap, sizeof...(Args)+1>;
             auto &args_arr = *static_cast<array_t *>(args_ptr);
-            auto args_tuple = impl::AsTuple<const C, Args...>(args_arr);
+            auto args_tuple = AsTuple<const C, Args...>(args_arr);
             return std::apply(func, args_tuple);
         };
         is_const_ = true;
@@ -131,10 +135,11 @@ public:
 
     template <typename C, typename... Args>
     explicit MemberFunction(void (C::*func)(Args...) const) {
+        n_args_ = sizeof...(Args);
         fn_ = [func](void *args_ptr) -> std::any {
-            using array_t = std::array<impl::ArgWrap, sizeof...(Args)+1>;
+            using array_t = std::array<ArgWrap, sizeof...(Args)+1>;
             auto &args_arr = *static_cast<array_t *>(args_ptr);
-            auto args_tuple = impl::AsTuple<const C, Args...>(args_arr);
+            auto args_tuple = AsTuple<const C, Args...>(args_arr);
             std::apply(func, args_tuple);
             return std::any{};
         };
@@ -154,9 +159,9 @@ public:
         if (n_args_ != sizeof...(Args)) {
             throw std::runtime_error("Mismatching number of arguments!");
         }
-        std::array<impl::ArgWrap, sizeof...(Args)+1> args_arr = {
-            impl::ArgWrap(c),
-            impl::ArgWrap{std::forward<Args>(args)}...};
+        std::array<ArgWrap, sizeof...(Args)+1> args_arr = {
+            ArgWrap(c),
+            ArgWrap{std::forward<Args>(args)}...};
         return fn_(&args_arr);
     }
 
@@ -166,6 +171,7 @@ private:
     std::string name_;
     bool is_const_{false};
     std::function<std::any(std::any)> fn_{nullptr};
+    size_t n_args_ {0};
 };
 
 class TypeDescriptor {
@@ -215,21 +221,17 @@ private:
 
 class RawTypeDescriptorBuilder {
 public:
-    explicit RawTypeDescriptorBuilder(const std::string &name);
+    RawTypeDescriptorBuilder() {}
+    explicit RawTypeDescriptorBuilder(const std::string &name) 
+            :desc_(std::make_unique<TypeDescriptor>()) {
+        desc_->name_ = name;
+    }
 
     ~RawTypeDescriptorBuilder();
     RawTypeDescriptorBuilder(const RawTypeDescriptorBuilder &) = delete;
     RawTypeDescriptorBuilder &operator=(const RawTypeDescriptorBuilder &) = delete;
-    RawTypeDescriptorBuilder(RawTypeDescriptorBuilder &&other) {
-        if (this != &other) {
-            this->desc_ = std::move(other.desc_);
-        }
-    }
-    RawTypeDescriptorBuilder &operator=(RawTypeDescriptorBuilder &&other) {
-        if (this != &other) {
-            this->desc_ = std::move(other.desc_);
-        }
-    }
+    RawTypeDescriptorBuilder(RawTypeDescriptorBuilder &&other) = default;
+    RawTypeDescriptorBuilder &operator=(RawTypeDescriptorBuilder &&other) = default;
 
     template <typename C>
     void SetConstructorDefault() {
@@ -263,7 +265,7 @@ public:
     }
     TypeDescriptorBuilder(const TypeDescriptorBuilder &) = delete;
     TypeDescriptorBuilder &operator=(const TypeDescriptorBuilder &) = delete;
-    TypeDescriptorBuilder(TypeDescriptorBuilder &&other) {
+    TypeDescriptorBuilder(TypeDescriptorBuilder &&other) noexcept {
         if (this != &other) {
             this->raw_builder_ = std::move(other.raw_builder_);
         }
@@ -272,6 +274,7 @@ public:
         if (this != &other) {
             this->raw_builder_ = std::move(other.raw_builder_);
         }
+        return *this;
     }
 
     template <typename C>
@@ -317,7 +320,7 @@ private:
 
 template <typename T>
 details::TypeDescriptorBuilder<T> AddClass(const std::string &name) {
-    details::TypeDescriptorBuilder<T> b{name};
+    details::TypeDescriptorBuilder<T> b(name);
     return b;
 }
 
