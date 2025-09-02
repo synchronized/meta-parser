@@ -7,4 +7,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE 	${CMAKE_CURRENT_SOURCE_DIR}/bin/rele
 
 add_subdirectory(3rd)
 add_subdirectory(src)
-add_subdirectory(sandbox)
+
+if(META_PARSER_SANDBOX)
+    add_subdirectory(sandbox)
+endif()
