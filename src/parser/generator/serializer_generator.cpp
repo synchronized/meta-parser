@@ -4,6 +4,11 @@
 
 namespace Generator
 {
+
+    static const std::string single_temp_name = "serializer.gen";
+    static const std::string all_head_temp_name = "serializer.all.h";
+    static const std::string all_hpp_temp_name = "serializer.all.ipp";
+
     SerializerGenerator::SerializerGenerator(
             std::string source_directory,
             std::string template_path,
@@ -20,9 +25,9 @@ namespace Generator
     void SerializerGenerator::prepareStatus(std::string path)
     {
         GeneratorInterface::prepareStatus(path);
-        TemplateManager::getInstance()->loadTemplates(m_template_path, "allSerializer.h");
-        TemplateManager::getInstance()->loadTemplates(m_template_path, "allSerializer.ipp");
-        TemplateManager::getInstance()->loadTemplates(m_template_path, "commonSerializerGenFile");
+        TemplateManager::getInstance()->loadTemplates(m_template_path, all_head_temp_name);
+        TemplateManager::getInstance()->loadTemplates(m_template_path, all_hpp_temp_name);
+        TemplateManager::getInstance()->loadTemplates(m_template_path, single_temp_name);
         return;
     }
 
@@ -35,13 +40,12 @@ namespace Generator
     {
         std::string file_path = processFileName(path);
 
-        Mustache::data muatache_data;
+        Mustache::data mustache_data;
         Mustache::data include_headfiles(Mustache::data::type::list);
         Mustache::data class_defines(Mustache::data::type::list);
 
-        std::string rela_path = Utils::makeRelativePath(m_root_path, path).string();
-        Utils::replaceAll(rela_path, "\\", "/");
-        include_headfiles.push_back(Mustache::data("headfile_name", rela_path));
+        std::string rela_path = Utils::makeRelativePath(m_root_path, path);
+        include_headfiles.push_back(Mustache::data("headfile_item", rela_path));
         for (auto class_temp : schema.classes)
         {
             if (!class_temp->shouldCompileFields())
@@ -60,9 +64,8 @@ namespace Generator
                     if (file_path != include_file_base)
                     {
 
-                        std::string rela_path = Utils::makeRelativePath(m_root_path, include_file_base).string();
-                        Utils::replaceAll(rela_path, "\\", "/");
-                        include_headfiles.push_back(Mustache::data("headfile_name", rela_path));
+                        std::string rela_path = Utils::makeRelativePath(m_root_path, include_file_base);
+                        include_headfiles.push_back(Mustache::data("headfile_item", rela_path));
                     }
                 }
             }
@@ -79,33 +82,26 @@ namespace Generator
                         auto include_file_base = processFileName(include_file);
                         if (file_path != include_file_base)
                         {
-                            std::string rela_path = Utils::makeRelativePath(m_root_path, include_file_base).string();
-                            Utils::replaceAll(rela_path, "\\", "/");
+                            std::string rela_path = Utils::makeRelativePath(m_root_path, include_file_base);
                             include_headfiles.push_back(Mustache::data(
-                                "headfile_name", rela_path));
+                                "headfile_item", rela_path));
                         }
                     }
                 }
                 // deal normal
             }
             class_defines.push_back(class_def);
-            m_class_defines.push_back(class_def);
-
-            m_sourcefile_list.emplace_back(class_temp->GetClassFullName());
         }
 
-        muatache_data.set("class_defines", class_defines);
-        muatache_data.set("include_headfiles", include_headfiles);
+        mustache_data.set("class_defines", class_defines);
+        mustache_data.set("include_headfiles", include_headfiles);
         std::string render_string =
-            TemplateManager::getInstance()->renderByTemplate("commonSerializerGenFile", muatache_data);
+            TemplateManager::getInstance()->renderByTemplate(single_temp_name, mustache_data);
         Utils::saveFile(render_string, file_path);
 
-        {
-            std::string rela_path = Utils::makeRelativePath(m_root_path, file_path).string();
-            Utils::replaceAll(rela_path, "\\", "/");
-            m_include_headfiles.push_back(
-                Mustache::data("headfile_name", rela_path));
-        }
+        std::string gen_rela_path = Utils::makeRelativePath(m_root_path, file_path);
+        mustache_data.set("generate_headfile_item", gen_rela_path);
+        m_mustache_data_list.push_back(mustache_data);
         return 0;
     }
 
@@ -113,20 +109,13 @@ namespace Generator
     {
         Mustache::data mustache_data;
 
-        Mustache::data sourefile_names    = Mustache::data::type::list;
-        for (auto& sourefile_name_upper_camel_case : m_sourcefile_list)
-        {
-            sourefile_names.push_back(Mustache::data("sourefile_name_upper_camel_case", sourefile_name_upper_camel_case));
-        }
+        mustache_data.set("sourefiles", m_mustache_data_list);
 
-        mustache_data.set("class_defines", m_class_defines);
-        mustache_data.set("include_headfiles", m_include_headfiles);
-        mustache_data.set("sourefile_names", sourefile_names);
-
-        std::string render_string = TemplateManager::getInstance()->renderByTemplate("allSerializer.h", mustache_data);
-        Utils::saveFile(render_string, m_out_path + "/all_serializer.h");
-        render_string = TemplateManager::getInstance()->renderByTemplate("allSerializer.ipp", mustache_data);
-        Utils::saveFile(render_string, m_out_path + "/all_serializer.ipp");
+        auto tempMgr = TemplateManager::getInstance();
+        std::string render_string = tempMgr->renderByTemplate(all_head_temp_name, mustache_data);
+        Utils::saveFile(render_string, m_out_path + "/serializer.all.h");
+        render_string = tempMgr->renderByTemplate(all_hpp_temp_name, mustache_data);
+        Utils::saveFile(render_string, m_out_path + "/serializer.all.ipp");
     }
 
     SerializerGenerator::~SerializerGenerator() {}

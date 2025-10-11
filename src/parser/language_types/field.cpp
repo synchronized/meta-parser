@@ -1,7 +1,8 @@
 #include "common/precompiled.h"
 
-#include "class.h"
-#include "field.h"
+#include "language_types/class.h"
+#include "language_types/field.h"
+#include "common/global_config.h"
 
 Field::Field(const Cursor& cursor, const Namespace& current_namespace, Class* parent) :
     TypeInfo(cursor, current_namespace), m_is_const(cursor.getType().IsConst()), m_parent(parent),
@@ -9,6 +10,11 @@ Field::Field(const Cursor& cursor, const Namespace& current_namespace, Class* pa
     m_type(Utils::getTypeNameWithoutNamespace(cursor.getType()))
 {
     Utils::replaceAll(m_type, " ", "");
+
+    auto& module_name = GlobalConfig::Get().m_module_name;
+    if (module_name.size() > 0) {
+        Utils::replaceAll(m_type, module_name+"::", "");
+    }
 
     auto ret_string = Utils::getStringWithoutQuot(m_meta_data.getProperty("default"));
     m_default       = ret_string;

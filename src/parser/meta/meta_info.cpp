@@ -34,7 +34,6 @@ std::vector<MetaInfo::Property> MetaInfo::extractProperties(const Cursor& cursor
     std::vector<Property> ret_list;
 
     auto propertyList = cursor.getDisplayName();
-    std::cout << "propertyList: " << propertyList << std::endl;
 
     auto&& properties = Utils::split(propertyList, ",");
 

@@ -284,4 +284,4 @@ CLASS(ss:public jkj,WhiteListFields)
 
 } // namespace serializer
 
-#include "_generated/serializer/all_serializer.h"
+#include "_generated/serializer/serializer.all.h"

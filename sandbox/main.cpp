@@ -8,19 +8,28 @@
 #include "runtime/person.hpp"
 
 int main() {
+    using namespace Sandbox;
     reflection::TypeMetaRegister::metaRegister();
     serializer::TypeMetaRegister::metaRegister();
 
     std::cout << "main" << std::endl;
 
-    auto& meta = reflection::GetByName("Sandbox::Person");
-    for (auto field : meta.GetMemberVars()) {
-        std::cout << "field.name : " << field.name() << ";" << std::endl;
+    {
+        auto& meta = reflection::GetByName("Student");
+        for (auto field : meta.GetMemberVars()) {
+            std::cout << "field.name : " << field.name() << ";" << std::endl;
+        }
+    }
+    {
+        auto& meta = reflection::GetByName("Person");
+        for (auto field : meta.GetMemberVars()) {
+            std::cout << "field.name : " << field.name() << ";" << std::endl;
+        }
     }
 
-    Sandbox::Person p{
-        .id = 1,
-        .name = "sunday1",
+    Person* tech = new Person(2, "sunday2");
+    Student p{
+        1, "sunday1", { {"main", "1@qq.com"} }, tech,
     };
 
     Json json = serializer::Serializer::write(&p);

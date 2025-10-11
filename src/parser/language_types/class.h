@@ -30,8 +30,9 @@ public:
     template<typename T>
     using SharedPtrVector = std::vector<std::shared_ptr<T>>;
 
-    std::string getClassName(void);
-    std::string GetClassFullName();
+    std::string getClassName();
+    std::string getClassQualifiedName();
+    std::string getClassNameWithNamespace();
 
     SharedPtrVector<BaseClass> m_base_classes;
 

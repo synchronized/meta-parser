@@ -1,11 +1,9 @@
 #include "common/precompiled.h"
-
+#include "common/global_config.h"
 #include "language_types/class.h"
-
 #include "generator/reflection_generator.h"
 #include "generator/serializer_generator.h"
-
-#include "parser.h"
+#include "parser/parser.h"
 
 #define RECURSE_NAMESPACES(kind, cursor, method, namespaces) \
     { \
@@ -31,7 +29,7 @@
         } \
     }
 
-void MetaParser::prepare(void) {}
+void MetaParser::prepare(void) { }
 
 std::string MetaParser::getIncludeFile(std::string name)
 {
@@ -49,11 +47,12 @@ MetaParser::MetaParser(const std::string project_input_file,
         : m_project_input_file(project_input_file),
           m_source_include_file_name(include_file_path), 
           m_sys_include(sys_include), 
-          m_module_name(module_name), 
           m_is_show_errors(is_show_errors),
           m_index(nullptr), 
           m_translation_unit(nullptr)
 {
+
+    GlobalConfig::Get().Init(module_name);
 
     m_work_paths = Utils::split(project_root, ";");
 

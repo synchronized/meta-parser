@@ -19,7 +19,6 @@ namespace Generator
         virtual std::string processFileName(std::string path) override;
 
     private:
-        std::vector<std::string> m_head_file_list;
-        std::vector<std::string> m_sourcefile_list;
+        Mustache::data m_mustache_data_list{Mustache::data::type::list};
     };
 } // namespace Generator

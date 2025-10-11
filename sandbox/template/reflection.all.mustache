@@ -1,0 +1,18 @@
+#pragma once
+#include "runtime/meta/reflection.hpp"
+#include "runtime/meta/reflection_register.h"
+{{#sourefiles}}
+#include "{{generate_headfile_item}}"
+{{/sourefiles}}
+
+namespace reflection{
+
+void TypeMetaRegister::metaRegister(){
+    {{#sourefiles}}
+    {{#class_defines}}
+    generate::TypeWrapperInterface_{{class_name_with_namespace}}::Regist();
+    {{/class_defines}}
+    {{/sourefiles}}
+}
+
+}//namespace reflection

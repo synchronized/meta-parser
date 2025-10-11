@@ -4,8 +4,8 @@
 #include "runtime/meta/serializer.hpp"
 #include "runtime/meta/serializer_register.h"
 
-#include "_generated/serializer/all_serializer.h"
-#include "_generated/serializer/all_serializer.ipp"
+#include "_generated/serializer/serializer.all.h"
+#include "_generated/serializer/serializer.all.ipp"
 
 namespace serializer
 {

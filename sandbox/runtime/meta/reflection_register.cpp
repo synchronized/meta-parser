@@ -3,7 +3,7 @@
 #include "runtime/meta/reflection.hpp"
 #include "runtime/meta/reflection_register.h"
 
-#include "_generated/reflection/all_reflection.h"
+#include "_generated/reflection/reflection.all.h"
 
 namespace reflection
 {

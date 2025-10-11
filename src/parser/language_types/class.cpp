@@ -1,6 +1,7 @@
 #include "common/precompiled.h"
 
 #include "class.h"
+#include "common/global_config.h"
 
 BaseClass::BaseClass(const Cursor& cursor) : name(Utils::getTypeNameWithoutNamespace(cursor.getType())) {}
 
@@ -10,6 +11,11 @@ Class::Class(const Cursor& cursor, const Namespace& current_namespace) :
     m_display_name(Utils::getNameWithoutFirstM(m_qualified_name))
 {
     Utils::replaceAll(m_name, " ", "");
+
+    auto& module_name = GlobalConfig::Get().m_module_name;
+    if (module_name.size() > 0) {
+        Utils::replaceAll(m_name, module_name+"::", "");
+    }
 
     for (auto& child : cursor.getChildren())
     {
@@ -48,9 +54,10 @@ bool Class::shouldCompileMethods(void) const{
            m_meta_data.getFlag(NativeProperty::WhiteListMethods);
 }
 
-std::string Class::getClassName(void) { return m_name; }
+std::string Class::getClassName() { return m_name; }
+std::string Class::getClassQualifiedName() { return m_qualified_name; }
 
-std::string Class::GetClassFullName() {
+std::string Class::getClassNameWithNamespace() {
     std::string class_name_with_namespace = this->m_qualified_name;
     Utils::replaceAll(class_name_with_namespace, "::", "_");
     return class_name_with_namespace;

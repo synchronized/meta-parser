@@ -16,7 +16,7 @@ namespace Utils
 
     std::string formatQualifiedName(std::string& source_string);
 
-    fs::path makeRelativePath(const fs::path& from, const fs::path& to);
+    std::string makeRelativePath(const fs::path& from, const fs::path& to);
 
     void fatalError(const std::string& error);
 

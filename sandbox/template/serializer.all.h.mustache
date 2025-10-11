@@ -1,9 +1,9 @@
 #pragma once
 #include "runtime/meta/serializer.hpp"
 #include "runtime/meta/serializer_register.h"
-{{#include_headfiles}}
-#include "{{headfile_name}}"
-{{/include_headfiles}}
+{{#sourefiles}}
+#include "{{generate_headfile_item}}"
+{{/sourefiles}}
 
 namespace serializer{
 

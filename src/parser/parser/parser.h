@@ -33,7 +33,6 @@ private:
     std::string m_project_input_file;
 
     std::vector<std::string> m_work_paths;
-    std::string              m_module_name;
     std::string              m_sys_include;
     std::string              m_source_include_file_name;
 
