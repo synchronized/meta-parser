@@ -8,26 +8,26 @@ namespace serializer{
 
 {{#class_defines}}
 template<>
-Json Serializer::write(const {{class_qualified_name}}& instance);
+Json Serializer::write(const {{class_name}}& instance);
 template<>
-{{class_qualified_name}}& Serializer::read(const Json& json_context, {{class_qualified_name}}& instance);
+{{class_name}}& Serializer::read(const Json& json_context, {{class_name}}& instance);
 
 namespace generate {
 
-class SearializerWrapperInterface_{{class_name_with_namespace}} {
+class SearializerWrapperInterface_{{class_qualified_name}} {
 public:
 
     static void* constructorWithJson(const Json& json_context){
-        {{class_qualified_name}}* ret_instance= new {{class_qualified_name}};
+        {{class_name}}* ret_instance= new {{class_name}};
         Serializer::read(json_context, *ret_instance);
         return ret_instance;
     }
     static Json writeToJson(void* instance){
-        return Serializer::write(*({{class_qualified_name}}*)instance);
+        return Serializer::write(*({{class_name}}*)instance);
     }
 
     static void Regist() {
-        AddClass<{{class_qualified_name}}>("{{class_name}}")
+        AddClass<{{class_name}}>("{{class_display_name}}")
             //constructor
             .SetConstructorWithJson(constructorWithJson)
             .SetWriteToJson(writeToJson);

@@ -20,11 +20,9 @@ namespace Generator
     protected:
         virtual void prepareStatus(std::string path) override;
 
-        virtual std::string processFileName(std::string path) override;
+        virtual std::string processFileName(std::string path, std::string ext_name) override;
 
     private:
-        Mustache::data m_class_defines {Mustache::data::type::list};
-        Mustache::data m_include_headfiles {Mustache::data::type::list};
         Mustache::data m_mustache_data_list {Mustache::data::type::list};
 
     };

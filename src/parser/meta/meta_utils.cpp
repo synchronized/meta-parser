@@ -43,11 +43,12 @@ namespace Utils
 
     std::string formatQualifiedName(std::string& source_string)
     {
-        Utils::replace(source_string, '<', 'L');
-        Utils::replace(source_string, ':', 'S');
-        Utils::replace(source_string, '>', 'R');
-        Utils::replace(source_string, '*', 'P');
-        return source_string;
+        std::string target_string = source_string;
+        Utils::replace(target_string, '<', 'L');
+        Utils::replace(target_string, ':', 'S');
+        Utils::replace(target_string, '>', 'R');
+        Utils::replace(target_string, '*', 'P');
+        return target_string;
     }
 
     /// <summary>
@@ -141,6 +142,14 @@ namespace Utils
             return std::string();
         }
         return result[result.size() - 1];
+    }
+
+    std::string getNameWithoutModule(std::string& name, std::string& module_name) {
+        std::string result = name;
+        if (module_name.size() > 0) {
+            Utils::replaceAll(result, module_name+"::", "");
+        }
+        return result;
     }
 
     std::string getNameWithoutFirstM(std::string& name)
@@ -246,7 +255,7 @@ namespace Utils
         return source_string;
     }
 
-    std::string loadFile(std::string path)
+    bool loadFile(std::string path, std::string& content)
     {
         std::ifstream      iFile(path);
         std::string        line_string;
@@ -254,7 +263,7 @@ namespace Utils
         if (false == iFile.is_open())
         {
             iFile.close();
-            return "";
+            return false;
         }
         while (std::getline(iFile, line_string))
         {
@@ -262,7 +271,8 @@ namespace Utils
         }
         iFile.close();
 
-        return template_stream.str();
+        content = template_stream.str();
+        return true;
     }
 
     void saveFile(const std::string& outpu_string, const std::string& output_file)

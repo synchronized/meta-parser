@@ -8,7 +8,7 @@ namespace serializer{
 void TypeMetaRegister::metaRegister(){
     {{#sourefiles}}
     {{#class_defines}}
-    generate::SearializerWrapperInterface_{{class_name_with_namespace}}::Regist();
+    generate::SearializerWrapperInterface_{{class_qualified_name}}::Regist();
     {{/class_defines}}
     {{/sourefiles}}
 }
@@ -16,7 +16,7 @@ void TypeMetaRegister::metaRegister(){
 {{#sourefiles}}
 {{#class_defines}}
 template<>
-Json Serializer::write(const {{class_qualified_name}}& instance){
+Json Serializer::write(const {{class_name}}& instance){
     Json::object  ret_context;
     {{#base_class_defines}}
     auto&&  json_context_{{base_class_index}} = Serializer::write(*({{base_class_name}}*)&instance);
@@ -27,17 +27,18 @@ Json Serializer::write(const {{class_qualified_name}}& instance){
 
     {{#field_defines}}
     {{#field_is_vector}}
-    Json::array {{field_name}}_json;
+    Json::array {{field_display_name}}_json;
     for (auto& item : instance.{{field_name}}){
-        {{field_name}}_json.emplace_back(Serializer::write(item));
+        {{field_display_name}}_json.emplace_back(Serializer::write(item));
     }
-    ret_context.insert_or_assign("{{field_display_name}}",{{field_name}}_json);{{/field_is_vector}}
+    ret_context.insert_or_assign("{{field_display_name}}",{{field_display_name}}_json);
+    {{/field_is_vector}}
     {{^field_is_vector}}ret_context.insert_or_assign("{{field_display_name}}", Serializer::write(instance.{{field_name}}));{{/field_is_vector}}
     {{/field_defines}}
     return  Json(ret_context);
 }
 template<>
-{{class_qualified_name}}& Serializer::read(const Json& json_context, {{class_qualified_name}}& instance){
+{{class_name}}& Serializer::read(const Json& json_context, {{class_name}}& instance){
     assert(json_context.is_object());
     {{#base_class_defines}}
     Serializer::read(json_context,*({{base_class_name}}*)&instance);
@@ -46,10 +47,10 @@ template<>
     if(!json_context["{{field_display_name}}"].is_null()){
         {{#field_is_vector}}
         assert(json_context["{{field_display_name}}"].is_array());
-        Json::array array_{{field_name}} = json_context["{{field_display_name}}"].array_items();
-        instance.{{field_name}}.resize(array_{{field_name}}.size());
-        for (size_t index=0; index < array_{{field_name}}.size();++index){
-            Serializer::read(array_{{field_name}}[index], instance.{{field_name}}[index]);
+        Json::array array_{{field_display_name}} = json_context["{{field_display_name}}"].array_items();
+        instance.{{field_name}}.resize(array_{{field_display_name}}.size());
+        for (size_t index=0; index < array_{{field_display_name}}.size();++index){
+            Serializer::read(array_{{field_display_name}}[index], instance.{{field_name}}[index]);
         }
         {{/field_is_vector}}
         {{^field_is_vector}}Serializer::read(json_context["{{field_display_name}}"], instance.{{field_name}});{{/field_is_vector}}

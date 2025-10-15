@@ -10,7 +10,7 @@ namespace reflection{
 void TypeMetaRegister::metaRegister(){
     {{#sourefiles}}
     {{#class_defines}}
-    generate::TypeWrapperInterface_{{class_name_with_namespace}}::Regist();
+    generate::TypeWrapperInterface_{{class_qualified_name}}::Regist();
     {{/class_defines}}
     {{/sourefiles}}
 }

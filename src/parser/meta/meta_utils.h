@@ -27,6 +27,8 @@ namespace Utils
 
     std::string getFileName(std::string path);
 
+    std::string getNameWithoutModule(std::string& name, std::string& module_name);
+
     std::string getNameWithoutFirstM(std::string& name);
 
     std::string getTypeNameWithoutNamespace(const CursorType& type);
@@ -45,7 +47,7 @@ namespace Utils
 
     std::string trim(std::string& source_string, const std::string trim_chars);
 
-    std::string loadFile(std::string path);
+    bool loadFile(std::string path, std::string& content);
 
     void saveFile(const std::string& outpu_string, const std::string& output_file);
 

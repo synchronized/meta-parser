@@ -3,19 +3,28 @@
 #include "class.h"
 #include "common/global_config.h"
 
-BaseClass::BaseClass(const Cursor& cursor) : name(Utils::getTypeNameWithoutNamespace(cursor.getType())) {}
+BaseClass::BaseClass(const Cursor& cursor) : 
+    m_name(cursor.getType().GetDisplayName()),
+    m_display_name(cursor.getDisplayName()),
+    m_qualified_name(Utils::formatQualifiedName(m_name))
+{
+
+    Utils::replaceAll(m_name, " ", "");
+    Utils::replaceAll(m_display_name, " ", "");
+    Utils::replaceAll(m_qualified_name, " ", "");
+    //m_display_name = Utils::getNameWithoutModule(m_name, GlobalConfig::Get().m_module_name);
+}
 
 Class::Class(const Cursor& cursor, const Namespace& current_namespace) :
-    TypeInfo(cursor, current_namespace), m_name(cursor.getDisplayName()),
-    m_qualified_name(Utils::getTypeNameWithoutNamespace(cursor.getType())),
-    m_display_name(Utils::getNameWithoutFirstM(m_qualified_name))
+    TypeInfo(cursor, current_namespace), 
+    m_name(cursor.getType().GetDisplayName()),
+    m_display_name(cursor.getDisplayName()),
+    m_qualified_name(Utils::formatQualifiedName(m_name))
 {
     Utils::replaceAll(m_name, " ", "");
-
-    auto& module_name = GlobalConfig::Get().m_module_name;
-    if (module_name.size() > 0) {
-        Utils::replaceAll(m_name, module_name+"::", "");
-    }
+    Utils::replaceAll(m_display_name, " ", "");
+    Utils::replaceAll(m_qualified_name, " ", "");
+    //Utils::getNameWithoutModule(m_name, GlobalConfig::Get().m_module_name);
 
     for (auto& child : cursor.getChildren())
     {
@@ -52,15 +61,6 @@ bool Class::shouldCompileMethods(void) const{
     
     return m_meta_data.getFlag(NativeProperty::All) || m_meta_data.getFlag(NativeProperty::Methods) ||
            m_meta_data.getFlag(NativeProperty::WhiteListMethods);
-}
-
-std::string Class::getClassName() { return m_name; }
-std::string Class::getClassQualifiedName() { return m_qualified_name; }
-
-std::string Class::getClassNameWithNamespace() {
-    std::string class_name_with_namespace = this->m_qualified_name;
-    Utils::replaceAll(class_name_with_namespace, "::", "_");
-    return class_name_with_namespace;
 }
 
 bool Class::isAccessible(void) const { return m_enabled; }

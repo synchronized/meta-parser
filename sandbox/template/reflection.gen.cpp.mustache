@@ -9,22 +9,17 @@ namespace reflection {
 namespace generate {
 
 {{#class_defines}}
-class TypeWrapperInterface_{{class_name_with_namespace}} {
+class TypeWrapperInterface_{{class_qualified_name}} {
 public:
 
     static void Regist() {
-        AddClass<{{class_qualified_name}}>("{{class_name}}")
+        AddClass<{{class_name}}>("{{class_display_name}}")
             //constructor
-            .SetConstructorDefault<{{class_qualified_name}}>()
+            .SetConstructorDefault<{{class_name}}>()
             // fields
             {{#field_defines}}
-            .AddMemberVar("{{field_name}}", &{{class_qualified_name}}::{{field_name}})
+            .AddMemberVar("{{field_display_name}}", &{{class_name}}::{{field_name}})
             {{/field_defines}}
-
-            // methods
-            {{#method_defines}}
-            .AddMemberFunc("{{method_name}}", &{{class_qualified_name}}::{{method_name}})
-            {{/method_defines}}
             ;
     }
 };

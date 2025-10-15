@@ -12,6 +12,8 @@ public:
     }
     void loadTemplates(std::string path, std::string template_name);
 
+    bool hasTemplate(std::string template_name);
+
     std::string renderByTemplate(std::string template_name, Mustache::data& template_data);
 
 private:

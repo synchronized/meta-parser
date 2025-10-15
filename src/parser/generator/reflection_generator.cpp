@@ -10,8 +10,9 @@
 
 namespace Generator
 {
-    static const std::string reflection_single_temp_name = "reflection.gen";
-    static const std::string reflection_all_temp_name = "reflection.all";
+    static const std::string single_cpp_temp_name = "reflection.gen.cpp";
+    static const std::string single_h_temp_name = "reflection.gen.h";
+    static const std::string all_temp_name = "reflection.all";
 
     ReflectionGenerator::ReflectionGenerator(
         std::string source_directory,
@@ -28,14 +29,16 @@ namespace Generator
     void ReflectionGenerator::prepareStatus(std::string path)
     {
         GeneratorInterface::prepareStatus(path);
-        TemplateManager::getInstance()->loadTemplates(m_template_path, reflection_single_temp_name);
-        TemplateManager::getInstance()->loadTemplates(m_template_path, reflection_all_temp_name);
+        auto tmpMgr = TemplateManager::getInstance();
+        tmpMgr->loadTemplates(m_template_path, single_cpp_temp_name);
+        tmpMgr->loadTemplates(m_template_path, single_h_temp_name);
+        tmpMgr->loadTemplates(m_template_path, all_temp_name);
         return;
     }
 
-    std::string ReflectionGenerator::processFileName(std::string path)
+    std::string ReflectionGenerator::processFileName(std::string path, std::string ext_name)
     {
-        auto relativeDir = fs::path(path).filename().replace_extension("reflection.gen.h").string();
+        auto relativeDir = fs::path(path).filename().replace_extension("reflection.gen"+ext_name).string();
         return m_out_path + "/" + relativeDir;
     }
 
@@ -43,7 +46,7 @@ namespace Generator
     {
         static const std::string vector_prefix = "std::vector<";
 
-        std::string    file_path = processFileName(path);
+        std::string    headfile_path = processFileName(path, ".h");
 
         Mustache::data mustache_data;
         Mustache::data include_headfiles(Mustache::data::type::list);
@@ -59,10 +62,9 @@ namespace Generator
             if (!class_temp->shouldCompile())
                 continue;
 
-            class_names.insert_or_assign(class_temp->getClassName(), false);
-            class_names[class_temp->getClassName()] = true;
+            class_names.insert_or_assign(class_temp->m_name, false);
+            class_names[class_temp->m_name] = true;
 
-            //std::vector<std::string>                                   field_names;
             std::map<std::string, std::pair<std::string, std::string>> vector_map;
 
             Mustache::data class_def;
@@ -73,19 +75,14 @@ namespace Generator
             {
                 if (!field->shouldCompile())
                     continue;
-                //field_names.emplace_back(field->m_name);
-                bool is_array = field->m_type.find(vector_prefix) == 0;
+                bool is_array = field->isVector();
                 if (is_array)
                 {
-                    std::string array_useful_name = field->m_type;
-
-                    Utils::formatQualifiedName(array_useful_name);
-
-                    std::string item_type = field->m_type;
+                    std::string item_type = field->m_type_name;
 
                     item_type = Utils::getNameWithoutContainer(item_type);
 
-                    vector_map[field->m_type] = std::make_pair(array_useful_name, item_type);
+                    vector_map[field->m_type_name] = std::make_pair(field->m_type_qualified_name, item_type);
                 }
             }
 
@@ -114,13 +111,22 @@ namespace Generator
         mustache_data.set("include_headfiles", include_headfiles);
 
         std::string tmp = Utils::convertNameToUpperCamelCase(fs::path(path).stem().string(), "_");
-        mustache_data.set("sourefile_name_upper_camel_case", tmp);
+        //mustache_data.set("sourefile_name_upper_camel_case", tmp);
 
-        std::string render_string =
-            TemplateManager::getInstance()->renderByTemplate(reflection_single_temp_name, mustache_data);
-        Utils::saveFile(render_string, file_path);
+        auto tmpMgr = TemplateManager::getInstance();
+        if (tmpMgr->hasTemplate(single_h_temp_name)) {
+            std::string render_string = 
+                tmpMgr->renderByTemplate(single_h_temp_name, mustache_data);
+            Utils::saveFile(render_string, headfile_path);
+        }
+        if (tmpMgr->hasTemplate(single_cpp_temp_name)) {
+            std::string sourcefile_path = processFileName(path, ".cpp");
+            std::string render_string =
+                tmpMgr->renderByTemplate(single_cpp_temp_name, mustache_data);
+            Utils::saveFile(render_string, sourcefile_path);
+        }
 
-        std::string rela_file = Utils::makeRelativePath(m_root_path, file_path);
+        std::string rela_file = Utils::makeRelativePath(m_root_path, headfile_path);
 
         mustache_data.set("generate_headfile_item", rela_file);
         m_mustache_data_list.push_back(mustache_data);
@@ -129,13 +135,16 @@ namespace Generator
 
     void ReflectionGenerator::finish()
     {
-        Mustache::data mustache_data;
+        auto tmpMgr = TemplateManager::getInstance();
+        if (tmpMgr->hasTemplate(all_temp_name)) {
+            Mustache::data mustache_data;
 
-        mustache_data.set("sourefiles", m_mustache_data_list);
+            mustache_data.set("sourefiles", m_mustache_data_list);
 
-        std::string render_string =
-            TemplateManager::getInstance()->renderByTemplate(reflection_all_temp_name, mustache_data);
-        Utils::saveFile(render_string, m_out_path + "/reflection.all.h");
+            std::string render_string =
+                tmpMgr->renderByTemplate(all_temp_name, mustache_data);
+            Utils::saveFile(render_string, m_out_path + "/reflection.all.h");
+        }
     }
 
     ReflectionGenerator::~ReflectionGenerator() {}

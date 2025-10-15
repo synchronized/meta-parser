@@ -21,9 +21,13 @@ public:
 
     std::string m_name;
     std::string m_display_name;
-    std::string m_type;
+
+    std::string m_type_name;
+    std::string m_type_display_name;
+    std::string m_type_qualified_name;
 
     std::string m_default;
 
     bool isAccessible(void) const;
+    bool isVector(void) const;
 };

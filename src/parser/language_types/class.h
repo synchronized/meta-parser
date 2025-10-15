@@ -9,7 +9,9 @@ struct BaseClass
 {
     BaseClass(const Cursor& cursor);
 
-    std::string name;
+    std::string m_name;
+    std::string m_display_name;
+    std::string m_qualified_name;
 };
 
 class Class : public TypeInfo
@@ -30,21 +32,16 @@ public:
     template<typename T>
     using SharedPtrVector = std::vector<std::shared_ptr<T>>;
 
-    std::string getClassName();
-    std::string getClassQualifiedName();
-    std::string getClassNameWithNamespace();
-
     SharedPtrVector<BaseClass> m_base_classes;
 
 public:
     std::string m_name;
-
+    std::string m_display_name;
     std::string m_qualified_name;
 
     SharedPtrVector<Field> m_fields;
     SharedPtrVector<Method> m_methods;
 
-    std::string m_display_name;
 
     bool isAccessible(void) const;
 };
