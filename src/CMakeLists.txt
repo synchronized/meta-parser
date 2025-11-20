@@ -7,16 +7,14 @@ find_package(LLVM REQUIRED)
 
 find_package(mustache REQUIRED)
 
-find_package(argparse REQUIRED)
-
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${HEADERS} ${SOURCES})
 
 if (CMAKE_HOST_WIN32)
-    set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} /O2 /Ob2")
+    #set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} /O2 /Ob2")
 else()
-    set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O3")
+    #set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O3")
 endif()
 
 file(GLOB_RECURSE HEADERS "parser/*.h" "parser/*.hpp")
