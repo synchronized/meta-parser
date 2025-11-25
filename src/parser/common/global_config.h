@@ -5,12 +5,15 @@
 class GlobalConfig {
 public:
     static GlobalConfig& Get();
-    void Init(std::string module_name) {
-        m_module_name = module_name;
+    void Init(std::string namespace_prefix) {
+        m_namespace_prefix = namespace_prefix;
     }
 
 public:
-    std::string m_module_name{};
+    std::string m_namespace_prefix{};
+    std::string m_template_root{};
+    std::string m_source_root{};
+    std::string m_output_dir{};
 
 private:
     GlobalConfig() = default;

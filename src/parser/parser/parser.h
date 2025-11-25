@@ -9,6 +9,7 @@
 
 #include "generator/generator.h"
 #include "template_manager/template_manager.h"
+#include "parser/options.h"
 
 class Class;
 
@@ -17,24 +18,16 @@ class MetaParser
 public:
     static void prepare(void);
 
-    MetaParser(const std::string project_input_file,
-               const std::string include_file_path,
-               const std::string project_root,
-               const std::string template_root,
-               const std::string include_sys,
-               const std::string module_name,
-               bool              is_show_errors);
+    MetaParser(Options& options);
     ~MetaParser(void);
     void finish(void);
     int  parse(void);
     void generateFiles(void);
+    void dump();
 
 private:
-    std::string m_project_input_file;
 
     std::vector<std::string> m_work_paths;
-    std::string              m_sys_include;
-    std::string              m_source_include_file_name;
 
     CXIndex           m_index;
     CXTranslationUnit m_translation_unit;
@@ -42,23 +35,16 @@ private:
     std::unordered_map<std::string, std::string>  m_type_table;
     std::unordered_map<std::string, SchemaMoudle> m_schema_modules;
 
-    std::vector<const char*>                    arguments = {{"-x",
-                                           "c++",
-                                           "-std=c++11",
-                                           "-D__REFLECTION_PARSER__",
-                                           "-DNDEBUG",
-                                           "-D__clang__",
-                                           "-w",
-                                           "-MG",
-                                           "-M",
-                                           "-ferror-limit=0",
-                                           "-o clangLog.txt"}};
     std::vector<Generator::GeneratorInterface*> m_generators;
 
     bool m_is_show_errors;
+    Options m_options;
+    std::vector<std::string> m_include_list;
 
 private:
-    bool        parseProject(void);
+    bool        generateIndex(void);
     void        buildClassAST(const Cursor& cursor, Namespace& current_namespace);
     std::string getIncludeFile(std::string name);
+    void genClassRenderData(std::shared_ptr<Class> class_temp, Mustache::data& class_def);
+    void genClassFieldRenderData(std::shared_ptr<Class> class_temp, Mustache::data& feild_defines);
 };

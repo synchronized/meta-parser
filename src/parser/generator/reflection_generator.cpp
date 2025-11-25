@@ -1,4 +1,5 @@
 #include "common/precompiled.h"
+#include "common/global_config.h"
 
 #include "generator/reflection_generator.h"
 
@@ -14,37 +15,29 @@ namespace Generator
     static const std::string single_h_temp_name = "reflection.gen.h";
     static const std::string all_temp_name = "reflection.all";
 
-    ReflectionGenerator::ReflectionGenerator(
-        std::string source_directory,
-        std::string template_path,
-        std::function<std::string(std::string)> get_include_function) 
-            : GeneratorInterface(
-                source_directory + "/_generated/reflection", 
-                source_directory, 
-                template_path,
-                get_include_function)
+    ReflectionGenerator::ReflectionGenerator(std::function<std::string(std::string)> get_include_function) 
+            : GeneratorInterface(get_include_function)
     {
-        prepareStatus(m_out_path);
+        prepareStatus();
     }
-    void ReflectionGenerator::prepareStatus(std::string path)
+    void ReflectionGenerator::prepareStatus()
     {
-        GeneratorInterface::prepareStatus(path);
         auto tmpMgr = TemplateManager::getInstance();
-        tmpMgr->loadTemplates(m_template_path, single_cpp_temp_name);
-        tmpMgr->loadTemplates(m_template_path, single_h_temp_name);
-        tmpMgr->loadTemplates(m_template_path, all_temp_name);
+        tmpMgr->loadTemplates(single_cpp_temp_name);
+        tmpMgr->loadTemplates(single_h_temp_name);
+        tmpMgr->loadTemplates(all_temp_name);
         return;
     }
 
     std::string ReflectionGenerator::processFileName(std::string path, std::string ext_name)
     {
         auto relativeDir = fs::path(path).filename().replace_extension("reflection.gen"+ext_name).string();
-        return m_out_path + "/" + relativeDir;
+        auto output_dir = GlobalConfig::Get().m_output_dir;
+        return output_dir + "/" + relativeDir;
     }
 
     int ReflectionGenerator::generate(std::string path, SchemaMoudle schema)
     {
-        static const std::string vector_prefix = "std::vector<";
 
         std::string    headfile_path = processFileName(path, ".h");
 
@@ -52,7 +45,8 @@ namespace Generator
         Mustache::data include_headfiles(Mustache::data::type::list);
         Mustache::data class_defines(Mustache::data::type::list);
 
-        std::string rela_path = Utils::makeRelativePath(m_root_path, path);
+        auto source_root = GlobalConfig::Get().m_source_root;
+        std::string rela_path = Utils::makeRelativePath(source_root, path);
         include_headfiles.push_back(Mustache::data("headfile_item", rela_path));
 
         std::map<std::string, bool> class_names;
@@ -65,45 +59,11 @@ namespace Generator
             class_names.insert_or_assign(class_temp->m_name, false);
             class_names[class_temp->m_name] = true;
 
-            std::map<std::string, std::pair<std::string, std::string>> vector_map;
 
             Mustache::data class_def;
-            Mustache::data vector_defines(Mustache::data::type::list);
 
             genClassRenderData(class_temp, class_def);
-            for (auto field : class_temp->m_fields)
-            {
-                if (!field->shouldCompile())
-                    continue;
-                bool is_array = field->isVector();
-                if (is_array)
-                {
-                    std::string item_type = field->m_type_name;
 
-                    item_type = Utils::getNameWithoutContainer(item_type);
-
-                    vector_map[field->m_type_name] = std::make_pair(field->m_type_qualified_name, item_type);
-                }
-            }
-
-            if (vector_map.size() > 0)
-            {
-                if (nullptr == class_def.get("vector_exist"))
-                {
-                    class_def.set("vector_exist", true);
-                }
-                for (auto vector_item : vector_map)
-                {
-                    std::string    array_useful_name = vector_item.second.first;
-                    std::string    item_type         = vector_item.second.second;
-                    Mustache::data vector_define;
-                    vector_define.set("vector_useful_name", array_useful_name);
-                    vector_define.set("vector_type_name", vector_item.first);
-                    vector_define.set("vector_element_type_name", item_type);
-                    vector_defines.push_back(vector_define);
-                }
-            }
-            class_def.set("vector_defines", vector_defines);
             class_defines.push_back(class_def);
         }
 
@@ -126,7 +86,7 @@ namespace Generator
             Utils::saveFile(render_string, sourcefile_path);
         }
 
-        std::string rela_file = Utils::makeRelativePath(m_root_path, headfile_path);
+        std::string rela_file = Utils::makeRelativePath(source_root, headfile_path);
 
         mustache_data.set("generate_headfile_item", rela_file);
         m_mustache_data_list.push_back(mustache_data);
@@ -143,7 +103,8 @@ namespace Generator
 
             std::string render_string =
                 tmpMgr->renderByTemplate(all_temp_name, mustache_data);
-            Utils::saveFile(render_string, m_out_path + "/reflection.all.h");
+            auto output_dir = GlobalConfig::Get().m_output_dir;
+            Utils::saveFile(render_string, output_dir + "/reflection.all.h");
         }
     }
 

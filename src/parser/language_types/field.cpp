@@ -11,7 +11,7 @@ Field::Field(const Cursor& cursor, const Namespace& current_namespace, Class* pa
     m_name(cursor.getSpelling()), 
     m_display_name(Utils::getNameWithoutFirstM(m_name)),
     m_type_name(cursor.getType().GetDisplayName()),
-    m_type_display_name(cursor.getDisplayName()),
+    m_type_display_name(cursor.getType().GetDisplayName()),
     m_type_qualified_name(Utils::formatQualifiedName(m_type_name))
 {
 
@@ -20,7 +20,6 @@ Field::Field(const Cursor& cursor, const Namespace& current_namespace, Class* pa
     Utils::replaceAll(m_type_name, " ", "");
     Utils::replaceAll(m_type_display_name, " ", "");
     Utils::replaceAll(m_type_qualified_name, " ", "");
-    //m_type_display_name = Utils::getNameWithoutModule(m_type_name, GlobalConfig::Get().m_module_name);
 
     auto ret_string = Utils::getStringWithoutQuot(m_meta_data.getProperty("default"));
     m_default       = ret_string;

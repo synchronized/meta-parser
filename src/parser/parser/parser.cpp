@@ -37,30 +37,15 @@ std::string MetaParser::getIncludeFile(std::string name)
     return iter == m_type_table.end() ? std::string() : iter->second;
 }
 
-MetaParser::MetaParser(const std::string project_input_file,
-                       const std::string include_file_path,
-                       const std::string project_root,
-                       const std::string template_root,
-                       const std::string sys_include,
-                       const std::string module_name,
-                       bool              is_show_errors) 
-        : m_project_input_file(project_input_file),
-          m_source_include_file_name(include_file_path), 
-          m_sys_include(sys_include), 
-          m_is_show_errors(is_show_errors),
+MetaParser::MetaParser(Options& options) 
+        : m_options(options),
           m_index(nullptr), 
           m_translation_unit(nullptr)
 {
 
-    GlobalConfig::Get().Init(module_name);
-
-    m_work_paths = Utils::split(project_root, ";");
-
     m_generators.emplace_back(new Generator::SerializerGenerator(
-        m_work_paths[0], template_root,
         std::bind(&MetaParser::getIncludeFile, this, std::placeholders::_1)));
     m_generators.emplace_back(new Generator::ReflectionGenerator(
-        m_work_paths[0], template_root,
         std::bind(&MetaParser::getIncludeFile, this, std::placeholders::_1)));
 }
 
@@ -87,37 +72,43 @@ void MetaParser::finish(void)
     }
 }
 
-bool MetaParser::parseProject()
+//生成文件
+bool MetaParser::generateIndex()
 {
     bool result = true;
 
-    std::fstream include_txt_file(m_project_input_file, std::ios::in);
+    std::fstream header_list_file(m_options.header_list_file, std::ios::in);
 
-    if (include_txt_file.fail())
+    if (header_list_file.fail())
     {
-        std::cout << "Could not load file: " << m_project_input_file << std::endl;
+        std::cout << "Could not load header_list_file: " << m_options.header_list_file << std::endl;
         return false;
     }
 
-    std::stringstream buffer;
-    buffer << include_txt_file.rdbuf();
+    std::vector<std::string> header_list;
+    {
+        std::string header_file;
 
-    std::string context = buffer.str();
-    Utils::replaceAll(context, "\n", "");
+        while (std::getline( header_list_file, header_file )) {
+            if (!header_file.empty()) {
+                header_list.push_back(header_file);
+            }
+        }
+    }
 
-    auto         inlcude_files = Utils::split(context, ";");
     std::fstream include_file;
 
-    include_file.open(m_source_include_file_name, std::ios::out);
+    std::string generate_entry_file = m_options.generate_entry_file;
+    include_file.open(generate_entry_file, std::ios::out);
     if (!include_file.is_open())
     {
-        std::cout << "Could not open the Source Include file: " << m_source_include_file_name << std::endl;
+        std::cout << "Could not open the Source Include file: " << generate_entry_file << std::endl;
         return false;
     }
 
-    std::cout << "Generating the Source Include file: " << m_source_include_file_name << std::endl;
+    std::cout << "Generating the Source Include file: " << generate_entry_file << std::endl;
 
-    std::string output_filename = Utils::getFileName(m_source_include_file_name);
+    std::string output_filename = Utils::getFileName(generate_entry_file);
 
     if (output_filename.empty())
     {
@@ -132,7 +123,7 @@ bool MetaParser::parseProject()
     include_file << "#ifndef __" << output_filename << "__" << std::endl;
     include_file << "#define __" << output_filename << "__" << std::endl;
 
-    for (auto include_item : inlcude_files)
+    for (auto include_item : header_list)
     {
         std::string temp_string(include_item);
         Utils::replace(temp_string, '\\', '/');
@@ -146,41 +137,41 @@ bool MetaParser::parseProject()
 
 int MetaParser::parse(void)
 {
-    bool parse_include_ = parseProject();
-    if (!parse_include_)
+    if (!generateIndex())
     {
-        std::cerr << "Parsing project file error! " << std::endl;
+        std::cerr << "generate index file error! " << std::endl;
         return -1;
     }
 
-    std::cerr << "Parsing the whole project..." << std::endl;
-    int is_show_errors      = m_is_show_errors ? 1 : 0;
-    m_index                 = clang_createIndex(true, is_show_errors);
-    std::string pre_include = "-I";
-    std::string sys_include_temp;
-    if (!(m_sys_include == "*"))
-    {
-        sys_include_temp = pre_include + m_sys_include;
-        arguments.emplace_back(sys_include_temp.c_str());
-    }
-
-    auto paths = m_work_paths;
-    for (int index = 0; index < paths.size(); ++index)
-    {
-        paths[index] = pre_include + paths[index];
-
-        arguments.emplace_back(paths[index].c_str());
-    }
-
-    fs::path input_path(m_source_include_file_name);
+    std::string input_path = m_options.generate_entry_file;
     if (!fs::exists(input_path))
     {
         std::cerr << input_path << " is not exist" << std::endl;
         return -2;
     }
 
+    std::vector<const char *> arguments;
+
+    for (auto &argument : m_options.arguments) 
+    {
+        arguments.emplace_back( argument.c_str( ) );
+    }
+
+    if (m_options.verbose)
+    {
+        for (auto *argument : arguments) {
+            std::cout << argument << std::endl;
+        }
+    }
+
+    std::cerr << "Parsing the whole project..." << std::endl;
+
+    m_index = clang_createIndex(true, m_options.verbose ? 1 : 0);
+
     m_translation_unit = clang_createTranslationUnitFromSourceFile(
-        m_index, m_source_include_file_name.c_str(), static_cast<int>(arguments.size()), arguments.data(), 0, nullptr);
+        m_index, input_path.c_str(), 
+        static_cast<int>(arguments.size()), arguments.data(), 0, nullptr);
+
     auto cursor = clang_getTranslationUnitCursor(m_translation_unit);
 
     Namespace temp_namespace;
@@ -195,11 +186,18 @@ int MetaParser::parse(void)
 void MetaParser::generateFiles(void)
 {
     std::cerr << "Start generate runtime schemas(" << m_schema_modules.size() << ")..." << std::endl;
-    for (auto& schema : m_schema_modules)
+
+    std::string output_dir = GlobalConfig::Get().m_output_dir;
+    if (!fs::exists(output_dir))
+    {
+        fs::create_directories(output_dir);
+    }
+
+    for (auto& [path, schema] : m_schema_modules)
     {
         for (auto& generator_iter : m_generators)
         {
-            generator_iter->generate(schema.first, schema.second);
+            generator_iter->generate(path, schema);
         }
     }
 
@@ -222,6 +220,40 @@ void MetaParser::buildClassAST(const Cursor& cursor, Namespace& current_namespac
         else
         {
             RECURSE_NAMESPACES(kind, child, buildClassAST, current_namespace);
+        }
+    }
+}
+
+void MetaParser::dump()
+{
+    std::cout << "MetaParser.dump()" << std::endl;
+    std::cout << "m_type_table: " << m_type_table.size() << std::endl;
+    for (auto& [key, val] : m_type_table) {
+        std::cout << "    " << key << ": " << val << std::endl;
+    }
+    std::cout << "m_schema_modules: " << m_schema_modules.size() << std::endl;
+    for (auto& [key, val] : m_schema_modules) {
+        std::cout << "    " << key << ":" << std::endl;
+        std::cout << "      - name : " << val.name << std::endl;
+        std::cout << "        classes : " << val.classes.size() << std::endl;
+        for (auto& clazz : val.classes) {
+            std::cout << "          - name : " << clazz->m_name << std::endl;
+            std::cout << "            display_name : " << clazz->m_display_name << std::endl;
+            std::cout << "            qualified_name : " << clazz->m_qualified_name << std::endl;
+            std::cout << "            base_class : " << clazz->m_base_classes.size() << std::endl;
+            for (auto base_class : clazz->m_base_classes) {
+                std::cout << "              - name : " << base_class->m_name << std::endl;
+                std::cout << "                display_name : " << base_class->m_display_name << std::endl;
+                std::cout << "                qualified_name : " << base_class->m_qualified_name << std::endl;
+            }
+            std::cout << "            field : " << clazz->m_fields.size() << std::endl;
+            for (auto field : clazz->m_fields) {
+                std::cout << "              - name : " << field->m_name << std::endl;
+                std::cout << "                display_name : " << field->m_display_name << std::endl;
+                std::cout << "                type_name : " << field->m_type_name << std::endl;
+                std::cout << "                type_display_name : " << field->m_type_display_name << std::endl;
+                std::cout << "                type_qualified_name : " << field->m_type_qualified_name << std::endl;
+            }
         }
     }
 }

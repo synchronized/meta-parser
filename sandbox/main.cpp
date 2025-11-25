@@ -5,7 +5,7 @@
 #include "runtime/meta/serializer_register.h"
 #include "runtime/meta/serializer.hpp"
 
-#include "runtime/person.hpp"
+#include "runtime/person.h"
 
 int main() {
     using namespace Sandbox;

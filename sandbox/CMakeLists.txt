@@ -1,38 +1,12 @@
 
-file(GLOB_RECURSE CUSTOM_PROJECT_RUNTIME_HEADS "runtime/*.h" "runtime/*.hpp")
+file(GLOB_RECURSE CUSTOM_PROJECT_RUNTIME_HEADS "runtime/*.h")
 
 # 生成代码
-set(CODEGEN_TARGET "PreCompile")
 set(PARSER_PROGRAM $<TARGET_FILE:MetaParser>)
-set(PRECOMPILE_TOOLS_PATH "${PROJECT_SOURCE_DIR}/bin")
-set(PRECOMPILE_FILE_IN_PATH "${CMAKE_CURRENT_SOURCE_DIR}/precompile/precompile.json.in")
-set(PRECOMPILE_FILE_PATH "${PRECOMPILE_TOOLS_PATH}/precompile.json")
-configure_file(${PRECOMPILE_FILE_IN_PATH} ${PRECOMPILE_FILE_PATH})
-message("PRECOMPILE_FILE_PATH: ${PRECOMPILE_FILE_PATH}")
 
-set(sys_include "*")
-set(GENCODE_OUTPUT ${CMAKE_BINARY_DIR}/parser_header.h)
+set(GENCODE_OUTPUT_DIR "_generated")
 set(GENCODE_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(GENCODE_TEMPLATE ${GENCODE_ROOT}/template)
-# Called first time when building target 
-add_custom_target(${CODEGEN_TARGET} ALL
-# COMMAND # (DEBUG: DON'T USE )
-#     this will make configure_file() is called on each compile
-#   ${CMAKE_COMMAND} -E touch ${PRECOMPILE_PARAM_IN_PATH}a
-# If more than one COMMAND is specified they will be executed in order...
-COMMAND
-  ${CMAKE_COMMAND} -E echo "************************************************************* "
-COMMAND
-  ${CMAKE_COMMAND} -E echo "**** [Precompile] BEGIN "
-COMMAND
-  ${CMAKE_COMMAND} -E echo "************************************************************* "
-
-COMMAND
-    ${PARSER_PROGRAM} --project_file_name "${PRECOMPILE_FILE_PATH}"  --output_file_name "${GENCODE_OUTPUT}"  --project_root "${GENCODE_ROOT}" --template_root "${GENCODE_TEMPLATE}" --sys_include "${sys_include}" --module_name "Sandbox"
-### BUILDING ====================================================================================
-COMMAND
-    ${CMAKE_COMMAND} -E echo "+++ Precompile finished +++"
-)
 
 
 set(SANDBOX_TARGET sandbox)
@@ -44,9 +18,18 @@ add_executable(${SANDBOX_TARGET} ${SOURCES})
 set_target_properties(${SANDBOX_TARGET} PROPERTIES CXX_STANDARD 20)
 target_include_directories(${SANDBOX_TARGET} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${SANDBOX_TARGET} PUBLIC json11)
+set_target_properties(${SANDBOX_TARGET} PROPERTIES 
+	CXX_STANDARD 17
+    DEBUG_POSTFIX ${CPP_REFLECTION_DEBUG_POSTFIX}
+    FOLDER "MetaParser/Example"
+    )
 
-
-add_dependencies(sandbox "${CODEGEN_TARGET}")
-add_dependencies("${CODEGEN_TARGET}" "MetaParser")
-
-
+meta_parser_build(
+    PARSER_EXECUTABLE ${PARSER_PROGRAM}
+    TNAMESPACE_PREFIX sandbox
+    TARGET ${SANDBOX_TARGET}
+    SOURCE_ROOT ${GENCODE_ROOT}
+    SOURCE_HEADERS ${CUSTOM_PROJECT_RUNTIME_HEADS}
+    GENERATED_DIR "_generated"
+    TEMPLATE_DIR ${GENCODE_TEMPLATE}
+    )

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cassert>
+#include <vector>
+#include <string>
 
 #include "runtime/meta/json.h"
 #include "runtime/meta/reflection.hpp"
@@ -197,6 +199,12 @@ public:
             return instance;
         }
     }
+
+    template<typename T>
+    static Json write(const std::vector<T>& instance);
+
+    template<typename T>
+    static std::vector<T>& read(const Json& json_context, std::vector<T>& instance);
 };
 
 // implementation of base types
@@ -234,6 +242,29 @@ template<>
 Json Serializer::write(const std::string& instance);
 template<>
 std::string& Serializer::read(const Json& json_context, std::string& instance);
+
+
+template<typename T>
+inline Json Serializer::write(const std::vector<T>& instance)
+{
+    Json::array json{};
+    for (auto& item : instance) {
+        json.emplace_back(Serializer::write<T>(item));
+    }
+    return json;
+}
+
+template<typename T>
+inline std::vector<T>& Serializer::read(const Json& json_context, std::vector<T>& instance)
+{
+    const Json::array& json_array = json_context.array_items();
+    instance.reserve(json_array.size());
+    for (auto& json_item : json_array) {
+        T vec_item;
+        instance.emplace_back(Serializer::read<T>(json_item, vec_item));
+    }
+    return instance;
+}
 
 // template<>
 // Json Serializer::write(const Reflection::object& instance);
@@ -284,4 +315,4 @@ CLASS(ss:public jkj,WhiteListFields)
 
 } // namespace serializer
 
-#include "_generated/serializer/serializer.all.h"
+#include "_generated/serializer.all.h"

@@ -5,9 +5,9 @@
 #include "field.h"
 #include "method.h"
 
-struct BaseClass
+struct BaseClass : public TypeInfo
 {
-    BaseClass(const Cursor& cursor);
+    BaseClass(const Cursor& cursor, const Namespace& current_namespace);
 
     std::string m_name;
     std::string m_display_name;

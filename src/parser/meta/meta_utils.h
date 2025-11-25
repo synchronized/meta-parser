@@ -27,7 +27,7 @@ namespace Utils
 
     std::string getFileName(std::string path);
 
-    std::string getNameWithoutModule(std::string& name, std::string& module_name);
+    std::string getNameWithoutModule(const std::string& name, const std::string& namespace_prefix);
 
     std::string getNameWithoutFirstM(std::string& name);
 

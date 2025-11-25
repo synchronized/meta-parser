@@ -144,10 +144,10 @@ namespace Utils
         return result[result.size() - 1];
     }
 
-    std::string getNameWithoutModule(std::string& name, std::string& module_name) {
+    std::string getNameWithoutModule(const std::string& name, const std::string& namespace_prefix) {
         std::string result = name;
-        if (module_name.size() > 0) {
-            Utils::replaceAll(result, module_name+"::", "");
+        if (namespace_prefix.size() > 0) {
+            Utils::replaceAll(result, namespace_prefix+"::", "");
         }
         return result;
     }

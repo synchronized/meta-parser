@@ -3,16 +3,20 @@
 #include "class.h"
 #include "common/global_config.h"
 
-BaseClass::BaseClass(const Cursor& cursor) : 
-    m_name(cursor.getType().GetDisplayName()),
-    m_display_name(cursor.getDisplayName()),
-    m_qualified_name(Utils::formatQualifiedName(m_name))
+BaseClass::BaseClass(const Cursor& cursor, const Namespace& current_namespace) 
+    : TypeInfo(cursor, current_namespace), 
+      m_name(cursor.getType().GetDisplayName()),
+      m_display_name(cursor.getDisplayName())
 {
-
+    if (m_name.find("::") == std::string::npos) {
+        if (current_namespace.size() > 0)  {
+            m_name = Utils::join(current_namespace, "::") + "::" + m_name;
+        }
+    }
     Utils::replaceAll(m_name, " ", "");
     Utils::replaceAll(m_display_name, " ", "");
     Utils::replaceAll(m_qualified_name, " ", "");
-    //m_display_name = Utils::getNameWithoutModule(m_name, GlobalConfig::Get().m_module_name);
+    m_qualified_name = Utils::formatQualifiedName(m_name);
 }
 
 Class::Class(const Cursor& cursor, const Namespace& current_namespace) :
@@ -24,14 +28,13 @@ Class::Class(const Cursor& cursor, const Namespace& current_namespace) :
     Utils::replaceAll(m_name, " ", "");
     Utils::replaceAll(m_display_name, " ", "");
     Utils::replaceAll(m_qualified_name, " ", "");
-    //Utils::getNameWithoutModule(m_name, GlobalConfig::Get().m_module_name);
 
     for (auto& child : cursor.getChildren())
     {
         switch (child.getKind())
         {
             case CXCursor_CXXBaseSpecifier: {
-                auto base_class = new BaseClass(child);
+                auto base_class = new BaseClass(child, current_namespace);
 
                 m_base_classes.emplace_back(base_class);
             }

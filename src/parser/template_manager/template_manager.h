@@ -10,7 +10,7 @@ public:
             m_pInstance = new TemplateManager();
         return m_pInstance;
     }
-    void loadTemplates(std::string path, std::string template_name);
+    std::string loadTemplates(std::string template_name);
 
     bool hasTemplate(std::string template_name);
 

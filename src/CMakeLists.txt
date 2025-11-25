@@ -3,19 +3,17 @@
 
 set(TARGET_NAME MetaParser)
 
-find_package(LLVM REQUIRED)
-
-find_package(mustache REQUIRED)
-
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+find_package(LLVM REQUIRED)
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${HEADERS} ${SOURCES})
 
-if (CMAKE_HOST_WIN32)
-    #set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} /O2 /Ob2")
-else()
-    #set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O3")
-endif()
+#if (MSVC)
+#    set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} /O2 /Ob2")
+#else()
+#    set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O3")
+#endif()
 
 file(GLOB_RECURSE HEADERS "parser/*.h" "parser/*.hpp")
 file(GLOB_RECURSE SOURCES "parser/*.cpp")
@@ -24,14 +22,17 @@ file(GLOB_RECURSE SOURCES "parser/*.cpp")
 # them in the solution explorer without them being added to the list of sources
 add_executable(${TARGET_NAME} ${HEADERS} ${SOURCES})
 
-set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 17)
-
 # add LLVM includes
 target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/parser)
 
-target_link_libraries(${TARGET_NAME} LLVM::clang)
-target_link_libraries(${TARGET_NAME} mustache::mustache)
-target_link_libraries(${TARGET_NAME} argparse::argparse)
+target_link_libraries(${TARGET_NAME} PRIVATE LLVM::clang)
+target_link_libraries(${TARGET_NAME} PRIVATE mustache::mustache)
+target_link_libraries(${TARGET_NAME} PRIVATE argparse::argparse)
+set_target_properties(${TARGET_NAME} PROPERTIES 
+    CXX_STANDARD 17
+    DEBUG_POSTFIX ${CPP_REFLECTION_DEBUG_POSTFIX}
+    FOLDER "MetaParser/Core"
+    )
 
 
 get_target_property(LLVM_SHARED_LIBRARY_DIR LLVM::clang IMPORTED_LOCATION)

@@ -7,8 +7,6 @@ namespace Generator
     public:
         SerializerGenerator() = delete;
         SerializerGenerator(
-            std::string source_directory, 
-            std::string template_path,
             std::function<std::string(std::string)> get_include_function);
 
         virtual int generate(std::string path, SchemaMoudle schema) override;
@@ -18,7 +16,7 @@ namespace Generator
         virtual ~SerializerGenerator() override;
 
     protected:
-        virtual void prepareStatus(std::string path) override;
+        virtual void prepareStatus() override;
 
         virtual std::string processFileName(std::string path, std::string ext_name) override;
 
