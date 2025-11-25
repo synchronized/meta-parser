@@ -1,0 +1,2 @@
+3rd/LLVM-21.1.6/bin/x64/libclang.dll filter=lfs diff=lfs merge=lfs -text
+3rd/LLVM-21.1.6/bin/Linux/libclang.so.21 filter=lfs diff=lfs merge=lfs -text
