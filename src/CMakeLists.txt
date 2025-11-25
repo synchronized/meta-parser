@@ -31,7 +31,7 @@ target_link_libraries(${TARGET_NAME} PRIVATE argparse::argparse)
 set_target_properties(${TARGET_NAME} PROPERTIES 
     CXX_STANDARD 17
     DEBUG_POSTFIX ${CPP_REFLECTION_DEBUG_POSTFIX}
-    FOLDER "MetaParser/Core"
+    FOLDER "Core"
     )
 
 

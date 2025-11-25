@@ -21,7 +21,7 @@ target_link_libraries(${SANDBOX_TARGET} PUBLIC json11)
 set_target_properties(${SANDBOX_TARGET} PROPERTIES 
 	CXX_STANDARD 17
     DEBUG_POSTFIX ${CPP_REFLECTION_DEBUG_POSTFIX}
-    FOLDER "MetaParser/Example"
+    FOLDER "Example"
     )
 
 meta_parser_build(

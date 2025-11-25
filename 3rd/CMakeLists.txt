@@ -1,4 +1,4 @@
-set(third_party_folder "MetaParser/ThirdParty")
+set(third_party_folder "ThirdParty")
 set(THIRD_PARTY_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 
 if(NOT TARGET json11)
