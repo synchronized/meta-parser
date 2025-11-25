@@ -8,6 +8,7 @@ function(meta_parser_build)
         SOURCE_ROOT
         GENERATED_DIR
         TEMPLATE_DIR
+        VERBOSE
     )
 
     set(MULTI_VALUE_ARGS 
@@ -67,6 +68,11 @@ function(meta_parser_build)
     endif ()
     get_target_property(TARGET_FOLDER ${BUILD_META_TARGET} FOLDER)
 
+    set(OPTIONS_VERBOSE "")
+    if(BUILD_META_VERBOSE)
+        set(OPTIONS_VERBOSE "--verbose")
+    endif()
+
     # add the command that generates the header and source files
     set(TARGET_NAME "${BUILD_META_TARGET}_Pregenerate")
     add_custom_target(${TARGET_NAME}
@@ -80,7 +86,7 @@ function(meta_parser_build)
         --header-list-file "${HEADERS_FILE}"
         --generate-entry-file "${GENERATE_ENTRY_FILE}"
         --includes-file "${INCLUDES_FILE}"
-        --verbose
+        ${OPTIONS_VERBOSE}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
     if(TARGET_FOLDER)

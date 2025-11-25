@@ -134,7 +134,6 @@ int parse(Options& options) {
     MetaParser parser(options);
 
     int result = parser.parse();
-    std::cerr << "---3---" << std::endl;
     if (0 != result)
     {
         return result;
