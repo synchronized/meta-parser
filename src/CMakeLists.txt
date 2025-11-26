@@ -29,7 +29,7 @@ target_link_libraries(${TARGET_NAME} PRIVATE LLVM::clang)
 target_link_libraries(${TARGET_NAME} PRIVATE mustache::mustache)
 target_link_libraries(${TARGET_NAME} PRIVATE argparse::argparse)
 set_target_properties(${TARGET_NAME} PROPERTIES 
-    CXX_STANDARD 17
+    CXX_STANDARD ${MAX_CXX_STANDARD}
     DEBUG_POSTFIX ${CPP_REFLECTION_DEBUG_POSTFIX}
     FOLDER "Core"
     )

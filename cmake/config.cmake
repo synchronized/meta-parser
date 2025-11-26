@@ -26,20 +26,17 @@
 ####################################################################################
 
 # dirs where the binaries should be placed, installed
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
-set(CMAKE_EXECUTABLE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
+if (PROJECT_IS_TOP_LEVEL)
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
+  set(CMAKE_EXECUTABLE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
+endif()
 
 # here we specify the installation directory
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/install" CACHE PATH  "CppReflection install prefix" FORCE)
 endif()
-
-# in order to group in visual studio the targets into solution filters
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-is_vs_based_build(VS_BUILD)
 
 # to avoid a setting a global debug flag automatically for all targets
 # we use an own variable
@@ -57,8 +54,7 @@ endif()
 # use standard c++ insteaf of extented (-std=c++17 vs. std=gnu++17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-get_latest_supported_cxx(CXX_STANDARD)
-set(MAX_CXX_STANDARD ${CXX_STANDARD})
+set(MAX_CXX_STANDARD 17)
 
 message(STATUS "using C++: ${MAX_CXX_STANDARD}")
 
