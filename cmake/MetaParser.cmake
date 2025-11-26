@@ -9,6 +9,7 @@ function(meta_parser_build)
         GENERATED_DIR
         TEMPLATE_DIR
         VERBOSE
+        ADD_DEP
     )
 
     set(MULTI_VALUE_ARGS 
@@ -93,5 +94,7 @@ function(meta_parser_build)
         set_target_properties(${TARGET_NAME} PROPERTIES 
             FOLDER ${TARGET_FOLDER})
     endif()
-    add_dependencies(${BUILD_META_TARGET} ${TARGET_NAME})
+    if(ADD_DEP)
+        add_dependencies(${BUILD_META_TARGET} ${TARGET_NAME})
+    endif()
 endfunction ()
